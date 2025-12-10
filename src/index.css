@@ -1,0 +1,60 @@
+:root {
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  --sidebar-bg: #ffffff;
+  /* White Sidebar */
+  --sidebar-text: #334155;
+  /* Dark text */
+  --sidebar-text-active: #b91c1c;
+  /* Red active text */
+  --sidebar-active-bg: #fef2f2;
+  /* Very light red active bg */
+
+  --header-bg: #aa0000;
+  /* Red Header */
+
+  --main-bg: #f8fafc;
+  --card-bg: #ffffff;
+  --primary: #aa0000;
+  /* Use red for primary actions too */
+  --text-main: #1e293b;
+  --text-secondary: #64748b;
+
+  --status-processing: #aa0000;
+  --status-pending: #10b981;
+
+  --tlu-red: #aa0000;
+
+  background-color: var(--main-bg);
+  color: var(--text-main);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+input {
+  font-family: inherit;
+}

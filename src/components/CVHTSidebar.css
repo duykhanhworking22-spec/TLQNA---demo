@@ -1,0 +1,103 @@
+.cvht-sidebar {
+    width: 280px;
+    background-color: var(--sidebar-bg);
+    /* White */
+    border-right: 1px solid #e2e8f0;
+    color: var(--sidebar-text);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    flex-shrink: 0;
+}
+
+.cvht-profile {
+    padding: 2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.cvht-avatar img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid var(--primary);
+    /* Red accent */
+    padding: 2px;
+}
+
+.cvht-info {
+    overflow: hidden;
+}
+
+.cvht-name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    color: var(--text-main);
+}
+
+.cvht-role {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 2px 0 0;
+}
+
+.cvht-nav {
+    flex: 1;
+    padding: 1.5rem 1rem;
+    /* Added side padding like student sidebar */
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.cvht-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    /* Rounded corners like student nav */
+    font-weight: 500;
+}
+
+.cvht-nav-item:hover {
+    background-color: #f8fafc;
+    color: var(--primary);
+}
+
+.cvht-nav-item.active {
+    background-color: var(--sidebar-active-bg);
+    /* Light red */
+    color: var(--sidebar-text-active);
+    /* Red */
+    font-weight: 600;
+}
+
+.cvht-nav-item svg {
+    opacity: 0.8;
+}
+
+.cvht-nav-item.active svg {
+    opacity: 1;
+}
+
+.cvht-nav-item.logout {
+    margin-top: auto;
+    color: var(--text-secondary);
+}
+
+.cvht-nav-item.logout:hover {
+    background-color: #fef2f2;
+    color: #ef4444;
+}

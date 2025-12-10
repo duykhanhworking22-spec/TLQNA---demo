@@ -1,0 +1,257 @@
+.main-content {
+    flex: 1;
+    background-color: var(--main-bg);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    position: relative;
+}
+
+.top-bar {
+    height: 60px;
+    background-color: var(--header-bg);
+    /* Enforce red background */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    color: #fff;
+    flex-shrink: 0;
+    position: relative;
+}
+
+.top-bar-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #fff;
+}
+
+.top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: auto;
+}
+
+.icon-btn {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: color 0.2s;
+    position: relative;
+}
+
+.icon-btn:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background-color: #fff;
+    /* White badge on red header looks better */
+    color: var(--primary);
+    font-size: 0.6rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.content-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    /* Reduced margin */
+    color: var(--text-main);
+}
+
+.controls-area {
+    display: flex;
+    justify-content: flex-start;
+    /* Align left */
+    align-items: center;
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+    /* Prevent stacking overlap if space tight */
+}
+
+.btn-primary {
+    background-color: #2563eb;
+    /* Blue button as seen in screenshot */
+    color: #fff;
+    padding: 0.6rem 1.25rem;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+}
+
+.search-input-wrapper {
+    position: relative;
+    width: 300px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.6rem 1rem 0.6rem 2.25rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    /* Flatter radius */
+    font-size: 0.9rem;
+    background-color: #fff;
+    color: var(--text-main);
+    transition: border-color 0.2s;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.table-card {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow-x: auto;
+    /* Handle overflow */
+}
+
+.questions-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    min-width: 800px;
+    /* Ensure table doesn't crush */
+}
+
+.questions-table th {
+    padding: 1rem 1.5rem;
+    background-color: #fff;
+    /* White header background */
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid #f1f5f9;
+}
+
+.questions-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    vertical-align: middle;
+}
+
+.subject-cell {
+    font-weight: 500;
+    min-width: 250px;
+}
+
+.date-cell {
+    min-width: 150px;
+    white-space: nowrap;
+    /* Prevent date wrapping */
+}
+
+.update-cell {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    min-width: 180px;
+}
+
+.status-badge {
+    display: inline-flex;
+    padding: 0.35rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #fff;
+    white-space: nowrap;
+    justify-content: center;
+    min-width: 100px;
+}
+
+.status-badge.processing {
+    background-color: #3b82f6;
+    /* Blue for Processing */
+}
+
+.status-badge.pending {
+    background-color: #f59e0b;
+    /* Orange for Pending */
+}
+
+.status-badge.completed {
+    background-color: #10b981;
+    /* Green for Completed/Answered */
+}
+
+/* Pagination controls */
+.pagination {
+    padding: 1rem;
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid #f1f5f9;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.page-btn {
+    background: transparent;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+}
+
+.page-btn:hover {
+    background-color: #f1f5f9;
+    color: var(--text-main);
+}
