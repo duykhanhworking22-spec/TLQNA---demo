@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { Accessibility, Key, ArrowLeft } from 'lucide-react';
 import './Login.css';
 import buildingImg from '../assets/Ảnh_bìa_tlu.png';
-import api from '../services/api';
+import api, { authApi } from '../services/api';
 
 // SVG Icon for Microsoft/Office (simplified)
 const OfficeIcon = () => (
-    <svg viewBox="0 0 24 24" fill="currentColor">
+    <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
         <path d="M0 0h11.377v11.372H0zM12.623 0H24v11.372H12.623zM0 12.623h11.377V24H0zM12.623 12.623H24V24H12.623z" />
     </svg>
 );
@@ -45,10 +45,7 @@ const Login = ({ onLogin }) => {
         setError('');
 
         try {
-            const response = await api.post('/auth/login', {
-                email: email,
-                password: password
-            });
+            const response = await authApi.login(email, password);
 
             if (response.data && response.data.token) {
                 const token = response.data.token;

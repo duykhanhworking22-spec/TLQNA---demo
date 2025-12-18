@@ -16,6 +16,10 @@ public enum QuestionStatus {
         return code;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
     public static QuestionStatus fromCode(int code) {
         for (QuestionStatus status : QuestionStatus.values()) {
             if (status.getCode() == code) {

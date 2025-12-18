@@ -16,12 +16,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 
 @Controller
 @RequestMapping("/admin/lop")
 public class LopAdminController {
     private final LopServicePort lopService;
     private final CVHTJpaRepository cvhtRepo;
+
     public LopAdminController(LopServicePort lopService, CVHTJpaRepository cvhtRepo) {
         this.lopService = lopService;
         this.cvhtRepo = cvhtRepo;
@@ -78,19 +80,21 @@ public class LopAdminController {
         return "redirect:/admin/lop";
     }
 
-    //Export
+    // Export
     @GetMapping("/export")
     public ResponseEntity<Resource> exportExcel() {
         String filename = "danh_sach_lop.xlsx";
-        InputStreamResource file = new InputStreamResource(ExcelHelper.lopsToExcel(lopService.getAllLop()));
+        InputStreamResource file = new InputStreamResource(Objects.requireNonNull(
+                ExcelHelper.lopsToExcel(lopService.getAllLop()), "Excel stream kh\u00f4ng \u0111\u01b0\u1ee3c null"));
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
-                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .contentType(
+                        MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(file);
     }
 
-    //Import
+    // Import
     @PostMapping("/import")
     public String uploadFile(@RequestParam("file") MultipartFile file, Model model) {
         if (ExcelHelper.hasExcelFormat(file)) {

@@ -1,81 +1,64 @@
-import React, { useState } from 'react';
-import { Search, ChevronDown, ChevronUp, BookOpen, HelpCircle, Filter, Calendar as CalendarIcon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, ChevronDown, ChevronUp, HelpCircle, Filter } from 'lucide-react';
+import { faqApi } from '../services/api';
 import './QuestionList.css'; // Common styles
 import './FAQ.css';
 
 const FAQ = () => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [openId, setOpenId] = useState(1);
+    const [openId, setOpenId] = useState(null);
+    const [faqs, setFaqs] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     // Filter states
     const [filters, setFilters] = useState({
+        topic: '',
+        major: '',
         course: '',
-        class: '',
-        tag: '',
-        subject: '',
-        time: 'all' // all, today, week, month, custom
+        academicYear: ''
     });
 
-    const faqs = [
-        {
-            id: 1,
-            question: "Bao giờ có lịch đăng ký học kỳ 2 nhóm 1?",
-            answer: "Chào em, dự kiến lịch đăng ký tín chỉ học kỳ 2 nhóm 1 sẽ bắt đầu vào ngày 01/03/2026. Lịch cụ thể từng ca sẽ được thông báo trên cổng thông tin sinh viên trước 1 tuần nhé.",
-            category: "Đăng ký tín chỉ",
-            course: "K35",
-            class: "Tất cả",
-            subject: "Tín chỉ",
-            answeredBy: "CVHT Nguyễn Thị Lan",
-            lastUpdate: "07/12/2025"
-        },
-        {
-            id: 2,
-            question: "Điều kiện để nhận học bổng khuyến khích học tập là gì?",
-            answer: "Để nhận học bổng KKHT, sinh viên cần đạt GPA học kỳ từ 3.2 trở lên (đối với loại Giỏi) hoặc 3.6 trở lên (Xuất sắc), điểm rèn luyện từ 80 trở lên và không có môn nào thi lại trong kỳ xét.",
-            category: "Học bổng",
-            course: "Tất cả",
-            class: "Tất cả",
-            subject: "Công tác sinh viên",
-            answeredBy: "Phòng CTSV",
-            lastUpdate: "01/10/2024"
-        },
-        {
-            id: 4,
-            question: "Điều kiện xếp hạng tốt nghiệp (Xuất sắc, Giỏi...) của Trường là gì?",
-            answer: (
-                <div>
-                    <p>Sinh viên tốt nghiệp được xếp hạng theo Điểm trung bình tích lũy (TBTL) toàn khóa học như sau:</p>
-                    <ul style={{ listStyleType: 'disc', paddingLeft: '1.5rem', margin: '0.5rem 0' }}>
-                        <li><strong>Xuất sắc:</strong> TBTL ≥ 9,0</li>
-                        <li><strong>Giỏi:</strong> 8,0 ≤ TBTL &lt; 9,0</li>
-                        <li><strong>Khá:</strong> 7,0 ≤ TBTL &lt; 8,0</li>
-                        <li><strong>Trung bình khá:</strong> 6,0 ≤ TBTL &lt; 7,0</li>
-                        <li><strong>Trung bình:</strong> 5,0 ≤ TBTL &lt; 6,0</li>
-                    </ul>
-                    <p style={{ marginTop: '0.5rem', fontStyle: 'italic', fontSize: '0.95rem', color: '#64748b' }}>
-                        * Lưu ý: Hạng tốt nghiệp của những sinh viên có điểm TBTL đạt loại xuất sắc hoặc giỏi sẽ bị giảm đi một mức nếu khối lượng các học phần học lại vượt quá 5% so với tổng số tín chỉ quy định cho toàn chương trình hoặc sinh viên đã bị kỷ luật từ mức cảnh cáo trở lên trong thời gian học.
-                    </p>
-                </div>
-            ),
-            category: "Quy chế Đào tạo",
-            course: "Tất cả",
-            class: "Tất cả",
-            subject: "Quy chế",
-            answeredBy: "Phòng Đào tạo",
-            lastUpdate: "07/12/2025"
-        },
-        {
-            id: 3,
-            question: "Em quên mật khẩu tài khoản sinh viên thì lấy lại như thế nào?",
-            answer: "Em vui lòng mang thẻ sinh viên lên phòng Eduroam (Tầng 2 nhà B) để được các thầy cô hỗ trợ cấp lại mật khẩu mới nhé.",
-            category: "Tài khoản",
-            course: "Tất cả",
-            class: "Tất cả",
-            subject: "CNTT",
-            answeredBy: "Trung tâm CNTT",
-            lastUpdate: "15/09/2024"
+
+
+    // Fetch FAQs from API
+    const fetchFAQs = async () => {
+        setLoading(true);
+        try {
+            // Build query params
+            const params = {};
+            if (searchTerm) params.keyword = searchTerm;
+            if (filters.topic) params.chuDe = filters.topic;
+            if (filters.major) params.khoaVien = filters.major;
+            if (filters.course) params.khoaHoc = filters.course;
+            if (filters.academicYear) params.namHoc = filters.academicYear;
+
+            const response = await faqApi.getAll(params);
+
+            // Axios returns data in response.data
+            const result = response.data;
+
+            if (result.status === 200 && result.data) {
+                setFaqs(result.data);
+            } else {
+                setFaqs([]);
+            }
+        } catch (error) {
+            console.error("Failed to fetch FAQs:", error);
+            setFaqs([]);
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
+
+    // Fetch when filters or search term changes
+    useEffect(() => {
+        // Debounce search slightly to avoid too many requests while typing
+        const timeoutId = setTimeout(() => {
+            fetchFAQs();
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm, filters]);
 
     const toggleFAQ = (id) => {
         setOpenId(openId === id ? null : id);
@@ -83,6 +66,10 @@ const FAQ = () => {
 
     const handleFilterChange = (key, value) => {
         setFilters(prev => ({ ...prev, [key]: value }));
+    };
+
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
     };
 
     return (
@@ -109,7 +96,7 @@ const FAQ = () => {
                             placeholder="Nhập từ khóa để tìm kiếm..."
                             className="search-input"
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onChange={handleSearchChange}
                         />
                     </div>
                 </div>
@@ -123,154 +110,112 @@ const FAQ = () => {
                                 <h3>Bộ lọc tìm kiếm</h3>
                             </div>
 
-                            {/* Theo Khóa */}
+                            {/* Chủ đề */}
                             <div className="filter-group">
-                                <label>Theo Khóa</label>
+                                <label>Chủ đề</label>
+                                <select
+                                    className="filter-select"
+                                    value={filters.topic}
+                                    onChange={(e) => handleFilterChange('topic', e.target.value)}
+                                >
+                                    <option value="">Tất cả chủ đề</option>
+                                    <option value="Học phí & Tài chính">Học phí & Tài chính</option>
+                                    <option value="Đào tạo & Tín chỉ">Đào tạo & Tín chỉ</option>
+                                    <option value="Thủ tục hành chính">Thủ tục hành chính</option>
+                                    <option value="Hoạt động khác">Hoạt động khác</option>
+                                </select>
+                            </div>
+
+                            {/* Chuyên ngành - Mapping to Khoa in backend */}
+                            <div className="filter-group">
+                                <label>Khoa / Viện</label>
+                                <select
+                                    className="filter-select"
+                                    value={filters.major}
+                                    onChange={(e) => handleFilterChange('major', e.target.value)}
+                                >
+                                    <option value="">Tất cả</option>
+                                    <option value="Công Nghệ Thông Tin">Công nghệ thông tin</option>
+                                    <option value="Truyền Thông Đa Phương Tiện">Truyền thông đa phương tiện</option>
+                                    <option value="Luật Kinh Tế">Luật kinh tế</option>
+                                </select>
+                            </div>
+
+                            {/* Khóa */}
+                            <div className="filter-group">
+                                <label>Khóa</label>
                                 <select
                                     className="filter-select"
                                     value={filters.course}
                                     onChange={(e) => handleFilterChange('course', e.target.value)}
                                 >
                                     <option value="">Tất cả các khóa</option>
-                                    <option value="K33">K33</option>
                                     <option value="K34">K34</option>
                                     <option value="K35">K35</option>
                                     <option value="K36">K36</option>
+                                    <option value="K37">K37</option>
                                 </select>
                             </div>
 
-                            {/* Theo Lớp */}
+                            {/* Năm học */}
                             <div className="filter-group">
-                                <label>Theo Lớp</label>
-                                <input
-                                    type="text"
-                                    className="filter-input"
-                                    placeholder="Nhập mã lớp..."
-                                    value={filters.class}
-                                    onChange={(e) => handleFilterChange('class', e.target.value)}
-                                />
-                            </div>
-
-                            {/* Theo Tag */}
-                            <div className="filter-group">
-                                <label>Theo Tag</label>
+                                <label>Năm học</label>
                                 <select
                                     className="filter-select"
-                                    value={filters.tag}
-                                    onChange={(e) => handleFilterChange('tag', e.target.value)}
+                                    value={filters.academicYear}
+                                    onChange={(e) => handleFilterChange('academicYear', e.target.value)}
                                 >
-                                    <option value="">Tất cả tags</option>
-                                    <option value="tin-chi">Đăng ký tín chỉ</option>
-                                    <option value="hoc-bong">Học bổng</option>
-                                    <option value="tai-khoan">Tài khoản</option>
-                                    <option value="hoc-phi">Học phí</option>
+                                    <option value="">Tất cả năm học</option>
+                                    <option value="2025">2025 - 2026</option>
+                                    <option value="2026">2026 - 2027</option>
                                 </select>
                             </div>
 
-                            {/* Theo Môn */}
-                            <div className="filter-group">
-                                <label>Theo Môn</label>
-                                <select
-                                    className="filter-select"
-                                    value={filters.subject}
-                                    onChange={(e) => handleFilterChange('subject', e.target.value)}
-                                >
-                                    <option value="">Tất cả các môn</option>
-                                    <option value="csdl">Cơ sở dữ liệu</option>
-                                    <option value="ctdl">Cấu trúc dữ liệu</option>
-                                    <option value="mmt">Mạng máy tính</option>
-                                </select>
-                            </div>
-
-                            {/* Theo Thời gian */}
-                            <div className="filter-group">
-                                <label>Theo Thời gian</label>
-                                <div className="time-filters">
-                                    <label className="radio-container">
-                                        <input
-                                            type="radio"
-                                            name="time"
-                                            checked={filters.time === 'today'}
-                                            onChange={() => handleFilterChange('time', 'today')}
-                                        />
-                                        <span className="radio-checkmark"></span>
-                                        Hôm nay
-                                    </label>
-                                    <label className="radio-container">
-                                        <input
-                                            type="radio"
-                                            name="time"
-                                            checked={filters.time === 'week'}
-                                            onChange={() => handleFilterChange('time', 'week')}
-                                        />
-                                        <span className="radio-checkmark"></span>
-                                        Tuần này
-                                    </label>
-                                    <label className="radio-container">
-                                        <input
-                                            type="radio"
-                                            name="time"
-                                            checked={filters.time === 'month'}
-                                            onChange={() => handleFilterChange('time', 'month')}
-                                        />
-                                        <span className="radio-checkmark"></span>
-                                        Tháng này
-                                    </label>
-                                    <label className="radio-container">
-                                        <input
-                                            type="radio"
-                                            name="time"
-                                            checked={filters.time === 'custom'}
-                                            onChange={() => handleFilterChange('time', 'custom')}
-                                        />
-                                        <span className="radio-checkmark"></span>
-                                        Tùy chọn thời gian
-                                    </label>
-                                </div>
-                                {filters.time === 'custom' && (
-                                    <div className="custom-date-inputs">
-                                        <input type="date" className="date-input" />
-                                        <span>-</span>
-                                        <input type="date" className="date-input" />
-                                    </div>
-                                )}
-                            </div>
-
-                            <button className="btn-apply-filter">Áp dụng bộ lọc</button>
+                            <button className="btn-apply-filter" onClick={fetchFAQs}>Áp dụng bộ lọc</button>
                         </div>
                     </aside>
 
                     {/* FAQ List */}
                     <div className="faq-list-container">
-                        {faqs.map((faq) => (
-                            <div key={faq.id} className={`faq-item ${openId === faq.id ? 'open' : ''}`}>
-                                <div className="faq-question" onClick={() => toggleFAQ(faq.id)}>
-                                    <div className="question-content">
-                                        <HelpCircle size={20} className="q-icon" />
-                                        <span className="q-text">{faq.question}</span>
+                        {loading ? (
+                            <div className="text-center" style={{ padding: '20px' }}>Đang tải dữ liệu...</div>
+                        ) : faqs.length === 0 ? (
+                            <div className="text-center" style={{ padding: '20px', color: '#666' }}>
+                                Không tìm thấy câu hỏi nào phù hợp với từ khóa và bộ lọc hiện tại.
+                            </div>
+                        ) : (
+                            faqs.map((faq) => (
+                                <div key={faq.maFaq} className={`faq-item ${openId === faq.maFaq ? 'open' : ''}`}>
+                                    <div className="faq-question" onClick={() => toggleFAQ(faq.maFaq)}>
+                                        <div className="question-content">
+                                            <HelpCircle size={20} className="q-icon" />
+                                            {/* Mapping backend 'tieuDe' to UI */}
+                                            <span className="q-text">{faq.tieuDe}</span>
+                                        </div>
+                                        <span className="toggle-icon">
+                                            {openId === faq.maFaq ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                        </span>
                                     </div>
-                                    <span className="toggle-icon">
-                                        {openId === faq.id ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                                    </span>
-                                </div>
 
-                                {openId === faq.id && (
-                                    <div className="faq-answer">
-                                        <div className="answer-box">
-                                            <div style={{ lineHeight: '1.6' }}>{faq.answer}</div>
-                                            <div className="answer-meta">
-                                                <div className="meta-left">
-                                                    <span className="meta-tag">{faq.category}</span>
-                                                    <span className="meta-dot">•</span>
-                                                    <span className="meta-time">{faq.lastUpdate}</span>
+                                    {openId === faq.maFaq && (
+                                        <div className="faq-answer">
+                                            <div className="answer-box">
+                                                {/* Mapping backend 'noiDung' to UI */}
+                                                <div style={{ lineHeight: '1.6', whiteSpace: 'pre-wrap' }}>{faq.noiDung}</div>
+                                                <div className="answer-meta">
+                                                    <div className="meta-left">
+                                                        <span className="meta-tag">{faq.chuDe}</span>
+                                                        {(faq.khoaVien || faq.khoaHoc) && <span className="meta-dot">•</span>}
+                                                        {faq.khoaVien && <span className="meta-tag" style={{ marginLeft: '5px' }}>{faq.khoaVien}</span>}
+                                                        {faq.khoaHoc && <span className="meta-tag" style={{ marginLeft: '5px' }}>{faq.khoaHoc}</span>}
+                                                    </div>
                                                 </div>
-                                                <span className="meta-author">Trả lời bởi: <strong>{faq.answeredBy}</strong></span>
                                             </div>
                                         </div>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+                                    )}
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
             </div>

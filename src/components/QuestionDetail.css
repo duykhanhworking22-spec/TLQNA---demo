@@ -80,6 +80,23 @@
     object-fit: cover;
 }
 
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.avatar-circle.admin {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
 .node-content-wrapper {
     flex: 1;
     background-color: var(--card-bg);
@@ -193,4 +210,25 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+}
+
+.attachment-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #f1f5f9;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.attachment-box a {
+    color: var(--primary);
+    text-decoration: none;
+}
+
+.attachment-box a:hover {
+    text-decoration: underline;
 }

@@ -5,9 +5,17 @@ import lombok.Data;
 
 @Data
 @Builder
-public class UserDto {
+public class UserProfileResponse {
     private String maDinhDanh;
     private String hoTen;
     private String email;
+    private String soDienThoai;
     private String role;
+
+    private String maLop;
+    private String tenLop;
+
+    // CVHT Info
+    private String cvhtMa;
+    private String cvhtHoTen;
 }

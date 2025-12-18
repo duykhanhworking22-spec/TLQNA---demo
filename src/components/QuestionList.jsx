@@ -1,29 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import { Search, Plus, Bell, ChevronLeft, ChevronRight } from 'lucide-react';
 import './QuestionList.css';
-import api from '../services/api';
+import api, { questionApi } from '../services/api';
 
 const QuestionList = ({ onNavigate }) => {
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         fetchQuestions();
     }, [page]);
 
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (page === 0) fetchQuestions();
+            else setPage(0); // This will trigger the first useEffect
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
     const fetchQuestions = async () => {
         setLoading(true);
         try {
-            // Note: Currently fetching all questions. If filtering by student is needed, 
-            // the backend might filter by token or we need to pass 'maSv' if we knew it.
-            const response = await api.get('/questions', {
-                params: {
-                    page: page,
-                    size: 10,
-                    sort: 'ngayGui,desc' // heuristic
-                }
+            const response = await questionApi.getAll({
+                page: page,
+                size: 10,
+                sort: 'ngayGui,desc',
+                keyword: searchTerm
             });
             if (response.data && response.data.data) {
                 const pageData = response.data.data;
@@ -81,7 +88,18 @@ const QuestionList = ({ onNavigate }) => {
             <div className="content-container">
                 <h1 className="page-title">Danh sách Câu hỏi</h1>
 
-                <div className="controls-area">
+                <div className="controls-area" style={{ justifyContent: 'space-between' }}>
+                    <div className="search-input-wrapper" style={{ width: '600px', maxWidth: '100%' }}>
+                        <Search className="search-icon" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm..."
+                            className="search-input"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+
                     <button
                         className="btn-primary"
                         onClick={() => onNavigate && onNavigate('new-question')}
@@ -89,11 +107,6 @@ const QuestionList = ({ onNavigate }) => {
                         <Plus size={18} style={{ marginRight: '0.5rem' }} />
                         Đặt câu hỏi mới
                     </button>
-
-                    <div className="search-input-wrapper">
-                        <Search className="search-icon" size={18} />
-                        <input type="text" placeholder="Tìm kiếm..." className="search-input" />
-                    </div>
                 </div>
 
                 <div className="table-card">

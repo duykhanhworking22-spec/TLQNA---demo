@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/classes")
 public class LopController {
@@ -21,18 +23,18 @@ public class LopController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ApiResponse> createLop(@Valid @RequestBody CreateLopRequest request) {
+    public ResponseEntity<ApiResponse<Void>> createLop(@Valid @RequestBody CreateLopRequest request) {
         lopService.createLop(request);
 
-        return ResponseEntity.ok(ApiResponse.builder()
+        return ResponseEntity.ok(ApiResponse.<Void>builder()
                 .status(AppStatus.SUCCESS.getCode())
                 .message("Tạo lớp thành công: " + request.getMaLop())
                 .build());
     }
 
     @org.springframework.web.bind.annotation.GetMapping
-    public ResponseEntity<ApiResponse> getClasses() {
-        return ResponseEntity.ok(ApiResponse.builder()
+    public ResponseEntity<ApiResponse<List<String>>> getClasses() {
+        return ResponseEntity.ok(ApiResponse.<List<String>>builder()
                 .status(AppStatus.SUCCESS.getCode())
                 .message("Danh sách mã lớp")
                 .data(lopService.getAllMaLop())
@@ -40,8 +42,8 @@ public class LopController {
     }
 
     @org.springframework.web.bind.annotation.GetMapping("/cohorts")
-    public ResponseEntity<ApiResponse> getCohorts() {
-        return ResponseEntity.ok(ApiResponse.builder()
+    public ResponseEntity<ApiResponse<List<String>>> getCohorts() {
+        return ResponseEntity.ok(ApiResponse.<List<String>>builder()
                 .status(AppStatus.SUCCESS.getCode())
                 .message("Danh sách khóa")
                 .data(lopService.getAllKhoaHoc())
@@ -49,8 +51,8 @@ public class LopController {
     }
 
     @org.springframework.web.bind.annotation.GetMapping("/majors")
-    public ResponseEntity<ApiResponse> getMajors() {
-        return ResponseEntity.ok(ApiResponse.builder()
+    public ResponseEntity<ApiResponse<List<String>>> getMajors() {
+        return ResponseEntity.ok(ApiResponse.<List<String>>builder()
                 .status(AppStatus.SUCCESS.getCode())
                 .message("Danh sách chuyên ngành")
                 .data(lopService.getAllChuyenNganh())

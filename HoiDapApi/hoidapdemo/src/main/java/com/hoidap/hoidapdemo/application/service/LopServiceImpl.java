@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class LopServiceImpl implements LopServicePort {
@@ -24,7 +25,7 @@ public class LopServiceImpl implements LopServicePort {
     @Override
     @Transactional
     public void createLop(CreateLopRequest request) {
-        if (lopRepo.existsById(request.getMaLop())) {
+        if (lopRepo.existsById(Objects.requireNonNull(request.getMaLop(), "Mã lớp không được null"))) {
             throw new IllegalArgumentException("Mã lớp đã tồn tại: " + request.getMaLop());
         }
 
@@ -34,7 +35,7 @@ public class LopServiceImpl implements LopServicePort {
         lop.setChuyenNganh(request.getChuyenNganh());
 
         if (request.getMaCvht() != null && !request.getMaCvht().isEmpty()) {
-            CVHTJpaEntity cvht = cvhtRepo.findById(request.getMaCvht())
+            CVHTJpaEntity cvht = cvhtRepo.findById(Objects.requireNonNull(request.getMaCvht()))
                     .orElseThrow(() -> new IllegalArgumentException("Mã CVHT không tồn tại"));
             lop.setCvht(cvht);
         }
@@ -49,7 +50,7 @@ public class LopServiceImpl implements LopServicePort {
 
     @Override
     public LopJpaEntity getLopById(String id) {
-        return lopRepo.findById(id)
+        return lopRepo.findById(Objects.requireNonNull(id, "ID không được null"))
                 .orElseThrow(() -> new IllegalArgumentException("Lớp không tồn tại với mã: " + id));
     }
 
@@ -61,7 +62,7 @@ public class LopServiceImpl implements LopServicePort {
         lop.setChuyenNganh(request.getChuyenNganh());
 
         if (request.getMaCvht() != null && !request.getMaCvht().isEmpty()) {
-            CVHTJpaEntity cvht = cvhtRepo.findById(request.getMaCvht())
+            CVHTJpaEntity cvht = cvhtRepo.findById(Objects.requireNonNull(request.getMaCvht()))
                     .orElseThrow(() -> new IllegalArgumentException("Mã CVHT không tồn tại"));
             lop.setCvht(cvht);
         } else {
@@ -74,16 +75,17 @@ public class LopServiceImpl implements LopServicePort {
     @Override
     @Transactional
     public void deleteLop(String id) {
-        if (!lopRepo.existsById(id)) {
-            throw new IllegalArgumentException("Không thể xóa. Lớp không tồn tại: " + id);
+        String nonNullId = Objects.requireNonNull(id, "ID không được null");
+        if (!lopRepo.existsById(nonNullId)) {
+            throw new IllegalArgumentException("Không thể xóa. Lớp không tồn tại: " + nonNullId);
         }
-        lopRepo.deleteById(id);
+        lopRepo.deleteById(nonNullId);
     }
 
     @Override
     @Transactional
     public void saveListLop(List<LopJpaEntity> listLop) {
-        lopRepo.saveAll(listLop);
+        lopRepo.saveAll(Objects.requireNonNull(listLop, "Danh sách lớp không được null"));
     }
 
     @Override

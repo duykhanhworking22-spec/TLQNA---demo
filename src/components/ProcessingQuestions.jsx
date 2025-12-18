@@ -10,6 +10,8 @@ const ProcessingQuestions = ({ onNavigate }) => {
     const [page, setPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
 
+    const [searchTerm, setSearchTerm] = useState('');
+
     // Filters
     const [statusFilter, setStatusFilter] = useState('ANSWER');
     const [classFilter, setClassFilter] = useState('');
@@ -46,6 +48,14 @@ const ProcessingQuestions = ({ onNavigate }) => {
         fetchQuestions();
     }, [page, statusFilter, classFilter, cohortFilter, majorFilter, yearFilter]);
 
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchQuestions();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
     const fetchQuestions = async () => {
         setLoading(true);
         try {
@@ -54,13 +64,14 @@ const ProcessingQuestions = ({ onNavigate }) => {
                 size: 10,
                 sort: 'ngayCapNhatCuoi,desc',
                 maLop: classFilter,
-                khoaHoc: cohortFilter,
-                chuyenNganh: majorFilter
+                khoa: cohortFilter,
+                chuyenNganh: majorFilter,
+                nam: yearFilter,
+                keyword: searchTerm
             };
 
-            if (yearFilter) {
-                params.fromDate = `${yearFilter}-01-01`;
-                params.toDate = `${yearFilter}-12-31`;
+            if (statusFilter !== 'ALL') {
+                params.status = statusFilter;
             }
 
             if (statusFilter !== 'ALL') {
@@ -169,7 +180,7 @@ const ProcessingQuestions = ({ onNavigate }) => {
                         </select>
                     </div>
 
-                    <div className="filter-group" style={{ marginLeft: 'auto' }}>
+                    <div className="filter-group">
                         <label className="filter-label">Năm</label>
                         <select
                             className="filter-input"
@@ -180,6 +191,20 @@ const ProcessingQuestions = ({ onNavigate }) => {
                                 <option key={y} value={y}>{y}</option>
                             ))}
                         </select>
+                    </div>
+
+                    <div className="search-wrapper" style={{ flex: 1, marginLeft: '1.5rem', position: 'relative' }}>
+                        <div style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }}>
+                            <svg xmlns="http://www.w3.org/2001/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </div>
+                        <input
+                            type="text"
+                            className="filter-input"
+                            style={{ width: '100%', paddingLeft: '36px' }}
+                            placeholder="Nhập từ khóa tìm kiếm..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                     </div>
                 </div>
 

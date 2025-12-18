@@ -3,22 +3,21 @@ package com.hoidap.hoidapdemo.infrastructure.adapter.web.controller.api.auth;
 import com.hoidap.hoidapdemo.application.port.UserServicePort;
 import com.hoidap.hoidapdemo.infrastructure.adapter.web.dto.auth.AuthResponse;
 import com.hoidap.hoidapdemo.infrastructure.adapter.web.dto.auth.LoginRequest;
-import com.hoidap.hoidapdemo.infrastructure.adapter.web.dto.auth.RegisterRequest;
 import com.hoidap.hoidapdemo.infrastructure.adapter.web.dto.user.ProfileUpdateRequest;
-import com.hoidap.hoidapdemo.infrastructure.adapter.web.dto.user.UserDto;
-import com.hoidap.hoidapdemo.infrastructure.adapter.web.dto.common.ApiResponse;
 import org.springframework.http.ResponseEntity;
 import com.hoidap.hoidapdemo.infrastructure.adapter.web.common.AppStatus;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Quản lý Đăng ký, Đăng nhập")
 public class AuthController {
     private final UserServicePort userService;
 
@@ -26,23 +25,27 @@ public class AuthController {
         this.userService = userService;
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> registerUser(@Valid @RequestBody RegisterRequest request) {
-        String userId = userService.register(
-                request.getEmail(),
-                request.getPassword(),
-                request.getHoTen(),
-                request.getSoDienThoai(),
-                request.getRole());
-
-        AuthResponse response = AuthResponse.builder()
-                .status(AppStatus.SUCCESS.getCode())
-                .message(AppStatus.SUCCESS.getMessage())
-                .build();
-        return ResponseEntity.ok(response);
-    }
+    // @PostMapping("/register")
+    // @Operation(summary = "Đăng ký")
+    // public ResponseEntity<AuthResponse> registerUser(@Valid @RequestBody
+    // RegisterRequest request) {
+    // String userId = userService.register(
+    // request.getEmail(),
+    // request.getPassword(),
+    // request.getHoTen(),
+    // request.getSoDienThoai(),
+    // request.getRole()
+    // );
+    //
+    // AuthResponse response = AuthResponse.builder()
+    // .status(AppStatus.SUCCESS.getCode())
+    // .message(AppStatus.SUCCESS.getMessage())
+    // .build();
+    // return ResponseEntity.ok(response);
+    // }
 
     @PostMapping("/login")
+    @Operation(summary = "Đăng nhập")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         try {
             String token = userService.login(request.getEmail(), request.getPassword());
@@ -64,32 +67,13 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/profile")
-    public ResponseEntity<ApiResponse<UserDto>> getProfile(
-            Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity.status(401).build();
-        }
-        String email = authentication.getName();
-        try {
-            UserDto user = userService.getUserByEmail(email);
-            return ResponseEntity
-                    .ok(ApiResponse.<UserDto>builder()
-                            .status(200)
-                            .message("Success")
-                            .data(user)
-                            .build());
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
     @PostMapping("/profile/update")
+    @Operation(summary = "Cập nhật thông tin")
     public ResponseEntity<AuthResponse> updateProfile(@Valid @RequestBody ProfileUpdateRequest request,
             Authentication authentication) {
         String email = authentication.getName();
         try {
-            userService.updateProfile(email, request.getMaLop(), request.getChuyenMon(), request.getSoDienThoai());
+            userService.updateProfile(email, request);
 
             return ResponseEntity.ok(AuthResponse.builder()
                     .status(AppStatus.SUCCESS.getCode())

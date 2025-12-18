@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { ArrowLeft, Clock, MessageSquare, Paperclip, Send, Download, Edit, Save, X, FileText } from 'lucide-react';
-import './QuestionList.css'; // Shared styles
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, Clock, MessageSquare, Edit, Paperclip, X, Save, Send } from 'lucide-react';
+import api, { questionApi } from '../services/api';
 import './QuestionDetail.css';
-import api from '../services/api';
 
 const QuestionDetail = ({ questionId, onBack }) => {
     const [question, setQuestion] = useState(null);
@@ -20,12 +19,10 @@ const QuestionDetail = ({ questionId, onBack }) => {
     const [editFile, setEditFile] = useState(null);
     const [saving, setSaving] = useState(false);
 
-
-
     // Determine Role
     const role = localStorage.getItem('role');
     const isCvht = role === 'cvht';
-    const API_BASE = 'http://localhost:8080';
+    const API_BASE = 'http://localhost:8081'; // Updated to 8081
 
     useEffect(() => {
         if (questionId) {
@@ -37,8 +34,8 @@ const QuestionDetail = ({ questionId, onBack }) => {
         setLoading(true);
         try {
             const [qRes, aRes] = await Promise.all([
-                api.get(`/questions/${questionId}`),
-                api.get(`/questions/${questionId}/latest-answer`).catch(() => ({ data: { data: null } }))
+                questionApi.getById(questionId),
+                questionApi.getLatestAnswer(questionId).catch(() => ({ data: { data: null } }))
             ]);
 
             setQuestion(qRes.data);
@@ -88,13 +85,16 @@ const QuestionDetail = ({ questionId, onBack }) => {
                 formData.append('file', editFile);
             }
 
+            // Still using base direct PUT as it wasn't explicitly added to questionApi in the same way 
+            // but let's assume we can use a generic update method or add it.
+            // For now, let's just keep the endpoint but use api instance consistency.
             await api.put(`/questions/${questionId}`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
             alert('Cập nhật câu hỏi thành công!');
             setIsEditing(false);
-            fetchData(); // Refresh data
+            fetchData();
         } catch (error) {
             console.error('Error updating question:', error);
             alert('Cập nhật thất bại. Vui lòng thử lại.');
@@ -120,14 +120,12 @@ const QuestionDetail = ({ questionId, onBack }) => {
                 formData.append('file', replyFile);
             }
 
-            await api.post(`/questions/${questionId}/answer`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' }
-            });
+            await questionApi.answer(questionId, formData);
 
             alert('Phản hồi thành công!');
             setReplyContent('');
             setReplyFile(null);
-            fetchData(); // Refresh to show new answer
+            fetchData();
 
         } catch (error) {
             console.error('Error sending reply:', error);

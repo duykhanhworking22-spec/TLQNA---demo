@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, MapPin, Calendar, Camera, Edit3, Save, X, Lock } from 'lucide-react';
 import './QuestionList.css'; // Re-use common styles
 import './Profile.css';
-import api from '../services/api';
+import api, { userApi, authApi } from '../services/api';
 
 const Profile = ({ userRole }) => {
     const [isEditing, setIsEditing] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [profileData, setProfileData] = useState({
         name: "",
         role: "",
@@ -18,8 +19,33 @@ const Profile = ({ userRole }) => {
     });
 
     useEffect(() => {
-        loadProfileFromToken();
+        fetchProfile();
     }, []);
+
+    const fetchProfile = async () => {
+        setLoading(true);
+        try {
+            const response = await userApi.getProfile();
+            if (response.data && response.data.data) {
+                const u = response.data.data;
+                setProfileData({
+                    name: u.hoTen || "Người dùng",
+                    role: u.role === 'CVHT' ? "Giảng viên" : (u.role === 'SINH_VIEN' ? "Sinh viên" : u.role),
+                    id: u.maDinhDanh || "",
+                    email: u.email || "",
+                    phone: u.soDienThoai || "Chưa cập nhật",
+                    className: u.maLop || "",
+                    faculty: u.chuyenMon || "Khoa Công nghệ Thông tin",
+                    dob: u.ngaySinh || "Chưa cập nhật"
+                });
+            }
+        } catch (error) {
+            console.error("Failed to fetch profile from API, falling back to token", error);
+            loadProfileFromToken();
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const loadProfileFromToken = () => {
         const token = localStorage.getItem('token');
@@ -33,13 +59,10 @@ const Profile = ({ userRole }) => {
                 }).join(''));
 
                 const payload = JSON.parse(jsonPayload);
-                // Mapping claims to State. Adjust claim keys based on actual JWT content.
-                // Assuming standard keys: sub (email), preferred_username (id?), name, etc.
-                // Or custom keys: maSv, maLop, etc.
                 setProfileData({
                     name: payload.hoTen || payload.name || "Người dùng",
                     role: userRole === 'cvht' ? "Giảng viên" : "Sinh viên",
-                    id: payload.maDinhDanh || payload.sub || "", // maDinhDanh from UserDto
+                    id: payload.maDinhDanh || payload.sub || "",
                     email: payload.email || payload.sub || "",
                     phone: payload.soDienThoai || "Chưa cập nhật",
                     className: payload.maLop || "",
@@ -64,15 +87,15 @@ const Profile = ({ userRole }) => {
         if (!confirm('Bạn có chắc chắn muốn cập nhật thông tin?')) return;
 
         try {
-            // API call to update profile
-            await api.post('/auth/profile/update', {
+            // Updated to use the new authApi.updateProfile method which calls /api/auth/profile/update
+            await authApi.updateProfile({
                 maLop: profileData.className,
                 chuyenMon: profileData.faculty,
                 soDienThoai: profileData.phone
             });
-            alert('Cập nhật hồ sơ thành công! (Lưu ý: Một số thông tin có thể cần đăng nhập lại để hiển thị mới)');
+            alert('Cập nhật hồ sơ thành công!');
             setIsEditing(false);
-            // Optionally refresh token if the backend returns a new one, but it doesn't here.
+            fetchProfile(); // Refresh data
         } catch (error) {
             console.error(error);
             alert('Cập nhật thất bại.');
@@ -81,7 +104,7 @@ const Profile = ({ userRole }) => {
 
     const handleCancel = () => {
         setIsEditing(false);
-        loadProfileFromToken(); // Reset
+        fetchProfile(); // Reset
     };
 
     return (

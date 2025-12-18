@@ -16,8 +16,7 @@ public class JwtUtils {
 
     private static final long JWT_EXPIRATION_MS = 8640000;
 
-    public String generateJwtToken(Authentication authentication, String maDinhDanh, String hoTen, String role,
-            String soDienThoai, String maLop, String chuyenMon) {
+    public String generateJwtToken(Authentication authentication, String maDinhDanh, String hoTen, String role) {
         UserDetails userPrincipal = (UserDetails) authentication.getPrincipal();
 
         return Jwts.builder()
@@ -25,9 +24,6 @@ public class JwtUtils {
                 .claim("maDinhDanh", maDinhDanh)
                 .claim("hoTen", hoTen)
                 .claim("role", role)
-                .claim("soDienThoai", soDienThoai)
-                .claim("maLop", maLop)
-                .claim("chuyenMon", chuyenMon)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + JWT_EXPIRATION_MS))
                 .signWith(key(), SignatureAlgorithm.HS256)

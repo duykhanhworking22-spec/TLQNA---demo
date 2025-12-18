@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import api from '../services/api';
+import api, { userApi, questionApi } from '../services/api';
 import { Send, Paperclip, X } from 'lucide-react';
 import './QuestionList.css'; // Common styles
 import './NewQuestion.css';
@@ -13,13 +13,13 @@ const NewQuestion = () => {
     const [cvhtInfo, setCvhtInfo] = useState('');
 
     React.useEffect(() => {
-        // Fetch current user profile to get CVHT info
-        api.get('/auth/profile')
+        // Fetch current user profile to get CVHT info via the new API
+        userApi.getProfile()
             .then(res => {
                 if (res.data && res.data.data) {
-                    const { cvhtHoTen, cvhtMa } = res.data.data;
-                    if (cvhtHoTen) {
-                        setCvhtInfo(`${cvhtMa || 'N/A'} - ${cvhtHoTen}`);
+                    const u = res.data.data;
+                    if (u.cvhtHoTen) {
+                        setCvhtInfo(`${u.cvhtMa || 'N/A'} - ${u.cvhtHoTen}`);
                     } else {
                         setCvhtInfo('Chưa có Cố vấn học tập');
                     }
@@ -45,16 +45,12 @@ const NewQuestion = () => {
             const formData = new FormData();
             formData.append('tieuDe', title);
             formData.append('noiDung', content);
-            formData.append('linhVuc', department); // Assuming backend accepts this field
+            formData.append('linhVuc', department);
             if (selectedFile) {
                 formData.append('file', selectedFile);
             }
 
-            const response = await api.post('/questions', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
+            const response = await questionApi.create(formData);
 
             if (response.data && response.data.status === 200) {
                 alert('Gửi câu hỏi thành công!');

@@ -19,7 +19,6 @@ public class QuestionFilter {
 
     private String maSv;
     private String maCv;
-
     private String maLop;
     private String khoaHoc;
     private String chuyenNganh;

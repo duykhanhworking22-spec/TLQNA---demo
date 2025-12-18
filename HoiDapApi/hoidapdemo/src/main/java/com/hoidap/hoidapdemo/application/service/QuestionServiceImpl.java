@@ -28,7 +28,10 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,7 +51,7 @@ public class QuestionServiceImpl {
 
     @Transactional
     public void createQuestion(String maSv, QuestionRequest request) {
-        SinhVienJpaEntity sv = sinhVienRepo.findById(maSv)
+        SinhVienJpaEntity sv = sinhVienRepo.findById(Objects.requireNonNull(maSv, "Mã sinh viên không được null"))
                 .orElseThrow(() -> new IllegalArgumentException("Sinh viên không tồn tại với mã: " + maSv));
 
         if (sv.getLop() == null || sv.getLop().getCvht() == null) {
@@ -77,6 +80,7 @@ public class QuestionServiceImpl {
         questionRepo.save(question);
     }
 
+    @Transactional
     public PageResponse<QuestionResponse> getAllQuestions(QuestionFilter filter, int pageNo, int pageSize) {
         Specification<QuestionJpaEntity> spec = QuestionSpecification.filter(filter);
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("ngayGui").descending());
@@ -97,20 +101,22 @@ public class QuestionServiceImpl {
                 .build();
     }
 
+    @Transactional
     public QuestionResponse getQuestionById(Long id) {
-        QuestionJpaEntity q = questionRepo.findById(id)
+        QuestionJpaEntity q = questionRepo.findById(Objects.requireNonNull(id, "ID câu hỏi không được null"))
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy câu hỏi ID: " + id));
         return mapToResponse(q);
     }
 
     public QuestionJpaEntity getQuestionEntityById(Long id) {
-        return questionRepo.findById(id)
+        return questionRepo.findById(Objects.requireNonNull(id, "ID câu hỏi không được null"))
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy câu hỏi ID: " + id));
     }
 
     @Transactional
     public void updateQuestion(Long questionId, String maSv, QuestionRequest request) {
-        QuestionJpaEntity question = questionRepo.findById(questionId)
+        QuestionJpaEntity question = questionRepo
+                .findById(Objects.requireNonNull(questionId, "ID câu hỏi không được null"))
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy câu hỏi ID:" + questionId));
         if (!question.getSinhVien().getMaSv().equals(maSv)) {
             throw new SecurityException("Bạn không có quyền chỉnh sửa câu hỏi này!");
@@ -135,7 +141,7 @@ public class QuestionServiceImpl {
 
     @Transactional
     public void answerQuestion(Long questionId, String emailCvht, AnswerRequest request) {
-        QuestionJpaEntity q = questionRepo.findById(questionId)
+        QuestionJpaEntity q = questionRepo.findById(Objects.requireNonNull(questionId, "ID câu hỏi không được null"))
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy câu hỏi"));
         if (q.getCvht() == null || !q.getCvht().getEmail().equals(emailCvht)) {
             throw new SecurityException("Bạn không có quyền truy cập!");
@@ -183,7 +189,8 @@ public class QuestionServiceImpl {
         if (q.getFileData() != null) {
             downloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
                     .path("/api/questions/")
-                    .path(q.getMaCauHoi().toString())
+                    .path(Objects.requireNonNull(
+                            Objects.requireNonNull(q.getMaCauHoi(), "ID câu hỏi không được null").toString()))
                     .path("/file")
                     .toUriString();
         }
@@ -225,7 +232,8 @@ public class QuestionServiceImpl {
         if (latestVersion.getFileData() != null) {
             downloadUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
                     .path("/api/questions/versions/")
-                    .path(latestVersion.getId().toString())
+                    .path(Objects.requireNonNull(
+                            Objects.requireNonNull(latestVersion.getId(), "ID phiên bản không được null").toString()))
                     .path("/file")
                     .toUriString();
         }
@@ -237,5 +245,41 @@ public class QuestionServiceImpl {
                 .fileName(latestVersion.getFileName())
                 .fileDownloadUrl(downloadUrl)
                 .build();
+    }
+
+    // admin
+    @Transactional
+    public void adminUpdateQuestion(Long id, QuestionRequest request) {
+        QuestionJpaEntity q = questionRepo.findById(Objects.requireNonNull(id, "ID câu hỏi không được null"))
+                .orElseThrow(() -> new IllegalArgumentException("Câu hỏi không tồn tại"));
+
+        q.setTieuDe(request.getTieuDe());
+        q.setNoiDung(request.getNoiDung());
+        questionRepo.save(q);
+    }
+
+    @Transactional
+    public void deleteQuestion(Long id) {
+        AnswerJpaEntity answer = answerRepo.findByQuestion_MaCauHoi(id).orElse(null);
+        if (answer != null) {
+            answerRepo.delete(answer);
+        }
+        questionRepo.deleteById(Objects.requireNonNull(id, "ID câu hỏi không được null"));
+    }
+
+    public Map<String, Object> getQuestionDetailForAdmin(Long id) {
+        QuestionJpaEntity q = getQuestionEntityById(id);
+        AnswerJpaEntity answer = answerRepo.findByQuestion_MaCauHoi(id).orElse(null);
+
+        List<AnswerVersionJpaEntity> history = (answer != null)
+                ? answerVersionRepo.findByAnswer_IdOrderByVersionDesc(answer.getId())
+                : List.of();
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("question", q);
+        result.put("answer", answer);
+        result.put("history", history);
+
+        return result;
     }
 }

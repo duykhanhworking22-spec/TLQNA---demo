@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.ByteArrayInputStream;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/reports")
@@ -44,7 +45,7 @@ public class ReportController {
         return ResponseEntity
                 .ok()
                 .headers(headers)
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(new InputStreamResource(bis));
+                .contentType(Objects.requireNonNull(MediaType.APPLICATION_PDF, "MediaType không được null"))
+                .body(new InputStreamResource(Objects.requireNonNull(bis, "ByteArrayInputStream không được null")));
     }
 }

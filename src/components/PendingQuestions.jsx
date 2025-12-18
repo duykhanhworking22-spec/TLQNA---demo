@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, ChevronLeft, ChevronRight, User, Clock, BookOpen, Layers, Users } from 'lucide-react';
+import { Eye, ChevronLeft, ChevronRight, User, Clock, BookOpen, Layers, Users, Search } from 'lucide-react';
 import './QuestionList.css';
 import './CVHTQuestions.css';
-import api from '../services/api';
+import api, { questionApi, classApi } from '../services/api';
 
 const PendingQuestions = ({ onNavigate }) => {
     const [questions, setQuestions] = useState([]);
@@ -15,6 +15,8 @@ const PendingQuestions = ({ onNavigate }) => {
     const [classFilter, setClassFilter] = useState('');
     const [cohortFilter, setCohortFilter] = useState('');
     const [majorFilter, setMajorFilter] = useState('');
+    const [yearFilter, setYearFilter] = useState('2025');
+    const [keyword, setKeyword] = useState('');
 
     // Data for dropdowns
     const [classes, setClasses] = useState([]);
@@ -25,9 +27,9 @@ const PendingQuestions = ({ onNavigate }) => {
         const fetchFilters = async () => {
             try {
                 const [classRes, cohortRes, majorRes] = await Promise.all([
-                    api.get('/classes'),
-                    api.get('/classes/cohorts'),
-                    api.get('/classes/majors')
+                    classApi.getAll(),
+                    classApi.getCohorts(),
+                    classApi.getMajors()
                 ]);
 
                 if (classRes.data && classRes.data.data) setClasses(classRes.data.data);
@@ -38,37 +40,51 @@ const PendingQuestions = ({ onNavigate }) => {
             }
         };
         fetchFilters();
-        fetchQuestions();
-    }, [page, statusFilter, classFilter, cohortFilter, majorFilter]);
+    }, []);
 
-    const fetchQuestions = async () => {
-        setLoading(true);
-        try {
-            const params = {
-                page: page,
-                size: 10,
-                sort: 'ngayGui,desc',
-                maLop: classFilter,
-                khoaHoc: cohortFilter,
-                chuyenNganh: majorFilter
-            };
+    useEffect(() => {
+        const fetchQuestions = async () => {
+            setLoading(true);
+            try {
+                const params = {
+                    page: page,
+                    size: 10,
+                    sort: 'ngayGui,desc',
+                    maLop: classFilter,
+                    khoaHoc: cohortFilter,
+                    chuyenNganh: majorFilter,
+                    keyword: keyword
+                };
 
-            if (statusFilter !== 'ALL') {
-                params.status = statusFilter;
+                if (yearFilter) {
+                    params.fromDate = `${yearFilter}-01-01`;
+                    params.toDate = `${yearFilter}-12-31`;
+                }
+
+                if (statusFilter !== 'ALL') {
+                    params.status = statusFilter;
+                }
+
+                const response = await questionApi.getAll(params);
+                if (response.data && response.data.data) {
+                    const pageData = response.data.data;
+                    setQuestions(pageData.content || []);
+                    setTotalPages(pageData.totalPages);
+                }
+            } catch (error) {
+                console.error("Failed to fetch questions", error);
+            } finally {
+                setLoading(false);
             }
+        };
 
-            const response = await api.get('/questions', { params });
-            if (response.data && response.data.data) {
-                const pageData = response.data.data;
-                setQuestions(pageData.content || []);
-                setTotalPages(pageData.totalPages);
-            }
-        } catch (error) {
-            console.error("Failed to fetch questions", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+        // Debounce fetch
+        const timeoutId = setTimeout(() => {
+            fetchQuestions();
+        }, 300);
+
+        return () => clearTimeout(timeoutId);
+    }, [page, statusFilter, classFilter, cohortFilter, majorFilter, yearFilter, keyword]);
 
     const formatDate = (dateString) => {
         if (!dateString) return '';
@@ -116,7 +132,6 @@ const PendingQuestions = ({ onNavigate }) => {
                 <h1 className="page-title" style={{ marginBottom: '1.5rem' }}>Danh sách câu hỏi</h1>
 
                 {/* Filter Bar */}
-                {/* Filter Bar */}
                 <div className="filter-bar">
                     <div className="filter-group">
                         <label className="filter-label">Chuyên Ngành</label>
@@ -158,6 +173,34 @@ const PendingQuestions = ({ onNavigate }) => {
                                 <option key={index} value={c}>{c}</option>
                             ))}
                         </select>
+                    </div>
+
+                    <div className="filter-group">
+                        <label className="filter-label">Năm</label>
+                        <select
+                            className="filter-input"
+                            value={yearFilter}
+                            onChange={(e) => { setYearFilter(e.target.value); setPage(0); }}
+                        >
+                            <option value="">Tất cả</option>
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                            <option value="2026">2026</option>
+                        </select>
+                    </div>
+
+                    <div className="filter-group search-group" style={{ flex: 1, minWidth: '250px' }}>
+                        <label className="filter-label" style={{ visibility: 'hidden' }}>Tìm kiếm</label>
+                        <div className="search-input-wrapper" style={{ width: '100%' }}>
+                            <Search className="search-icon" size={18} />
+                            <input
+                                type="text"
+                                placeholder="Nhập từ khóa tìm kiếm..."
+                                className="search-input"
+                                value={keyword}
+                                onChange={(e) => { setKeyword(e.target.value); setPage(0); }}
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -201,15 +244,15 @@ const PendingQuestions = ({ onNavigate }) => {
                                             </div>
                                             <div className="detail-row highlight">
                                                 <Users size={14} />
-                                                <span>{q.maLop || '---'}</span>
+                                                <span>{q.maLop || 'Chưa có lớp'}</span>
                                             </div>
                                             <div className="detail-row">
                                                 <Layers size={14} />
-                                                <span>{q.khoaHoc || '---'}</span>
+                                                <span>{q.khoaHoc || 'Chưa có khóa'}</span>
                                             </div>
                                             <div className="detail-row">
                                                 <BookOpen size={14} />
-                                                <span>{q.chuyenNganh || '---'}</span>
+                                                <span>{q.chuyenNganh || 'Chưa có ngành'}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -237,7 +280,7 @@ const PendingQuestions = ({ onNavigate }) => {
                     </>
                 )}
             </div>
-        </main >
+        </main>
     );
 };
 
