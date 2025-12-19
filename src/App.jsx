@@ -40,7 +40,6 @@ function App() {
       if (savedQuestionId) setSelectedQuestionId(savedQuestionId);
 
     } else {
-      // Fallback to URL detection if needed, or strictly Require Login
       const path = window.location.pathname;
       if (path.startsWith('/cvht')) setUserRole('cvht');
       else if (path.startsWith('/sinhvien')) setUserRole('student');
@@ -48,9 +47,8 @@ function App() {
   }, []);
 
   const handleLogin = (role) => {
-    // Called after successful login
     setUserRole(role);
-    localStorage.removeItem('previousPage'); // Clear prev history on new login
+    localStorage.removeItem('previousPage');
     localStorage.removeItem('selectedQuestionId');
 
     if (role === 'cvht') {

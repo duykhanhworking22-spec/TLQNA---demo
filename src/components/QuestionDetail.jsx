@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Clock, MessageSquare, Edit, Paperclip, X, Save, Send } from 'lucide-react';
+import { ArrowLeft, Clock, MessageSquare, Edit, Paperclip, X, Save, Send, History } from 'lucide-react';
 import api, { questionApi } from '../services/api';
 import './QuestionDetail.css';
 
 const QuestionDetail = ({ questionId, onBack }) => {
     const [question, setQuestion] = useState(null);
     const [latestAnswer, setLatestAnswer] = useState(null);
+    const [answerHistory, setAnswerHistory] = useState([]);
+    const [showHistory, setShowHistory] = useState(false);
     const [loading, setLoading] = useState(true);
 
     // Reply State (CVHT)
@@ -18,6 +20,12 @@ const QuestionDetail = ({ questionId, onBack }) => {
     const [editData, setEditData] = useState({ tieuDe: '', noiDung: '' });
     const [editFile, setEditFile] = useState(null);
     const [saving, setSaving] = useState(false);
+
+    // Edit Answer State (CVHT)
+    const [isEditingAnswer, setIsEditingAnswer] = useState(false);
+    const [editAnswerContent, setEditAnswerContent] = useState('');
+    const [editAnswerFile, setEditAnswerFile] = useState(null);
+    const [sendingAnswer, setSendingAnswer] = useState(false);
 
     // Determine Role
     const role = localStorage.getItem('role');
@@ -33,13 +41,15 @@ const QuestionDetail = ({ questionId, onBack }) => {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [qRes, aRes] = await Promise.all([
+            const [qRes, aRes, hRes] = await Promise.all([
                 questionApi.getById(questionId),
-                questionApi.getLatestAnswer(questionId).catch(() => ({ data: { data: null } }))
+                questionApi.getLatestAnswer(questionId).catch(() => ({ data: { data: null } })),
+                questionApi.getHistory(questionId).catch(() => ({ data: { data: [] } }))
             ]);
 
             setQuestion(qRes.data);
             setLatestAnswer(aRes.data?.data || null);
+            setAnswerHistory(hRes.data?.data || []);
         } catch (error) {
             console.error('Error fetching details:', error);
         } finally {
@@ -107,6 +117,53 @@ const QuestionDetail = ({ questionId, onBack }) => {
         setIsEditing(false);
         setEditData({ tieuDe: '', noiDung: '' });
         setEditFile(null);
+    };
+
+    // --- Edit Answer Logic (CVHT) ---
+    const handleEditAnswerClick = () => {
+        if (latestAnswer) {
+            setEditAnswerContent(latestAnswer.noiDung);
+            setEditAnswerFile(null);
+            setIsEditingAnswer(true);
+        }
+    };
+
+    const handleEditAnswerFileChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            setEditAnswerFile(e.target.files[0]);
+        }
+    };
+
+    const handleCancelEditAnswer = () => {
+        setIsEditingAnswer(false);
+        setEditAnswerContent('');
+        setEditAnswerFile(null);
+    };
+
+    const handleSaveAnswerEdit = async () => {
+        if (!editAnswerContent.trim()) {
+            alert("Nội dung trả lời không được để trống");
+            return;
+        }
+        setSendingAnswer(true);
+        try {
+            const formData = new FormData();
+            formData.append('noiDung', editAnswerContent);
+            if (editAnswerFile) {
+                formData.append('file', editAnswerFile);
+            }
+
+            await questionApi.answer(questionId, formData);
+
+            alert('Cập nhật câu trả lời thành công!');
+            setIsEditingAnswer(false);
+            fetchData();
+        } catch (error) {
+            console.error('Error updating answer:', error);
+            alert('Cập nhật thất bại.');
+        } finally {
+            setSendingAnswer(false);
+        }
     };
 
     // --- Reply Logic ---
@@ -284,6 +341,7 @@ const QuestionDetail = ({ questionId, onBack }) => {
                     </div>
 
                     {/* Latest Answer (if any) */}
+                    {/* Latest Answer (if any) */}
                     {latestAnswer && (
                         <div className="message-node admin-node">
                             <div className="node-avatar">
@@ -294,19 +352,112 @@ const QuestionDetail = ({ questionId, onBack }) => {
                                     <span className="node-name">{latestAnswer.nguoiTraLoi || 'CVHT'}</span>
                                     <span className="role-badge">Cố vấn</span>
                                     <span className="node-time">{formatDate(latestAnswer.ngayTraLoi)}</span>
+                                    {isCvht && !isEditingAnswer && (
+                                        <button
+                                            className="edit-btn"
+                                            onClick={handleEditAnswerClick}
+                                            title="Sửa câu trả lời"
+                                            style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}
+                                        >
+                                            <Edit size={16} />
+                                        </button>
+                                    )}
                                 </div>
                                 <div className="node-body">
-                                    <p style={{ whiteSpace: 'pre-line' }}>{latestAnswer.noiDung}</p>
-                                    {latestAnswer.fileName && (
-                                        <div className="attachment-box">
+                                    {isEditingAnswer ? (
+                                        <div className="edit-form">
+                                            <textarea
+                                                className="form-textarea"
+                                                rows={5}
+                                                value={editAnswerContent}
+                                                onChange={e => setEditAnswerContent(e.target.value)}
+                                                style={{ width: '100%', marginBottom: '10px' }}
+                                            ></textarea>
+
+                                            <div className="file-input-wrapper" style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+                                                <input type="file" id="edit-answer-file" hidden onChange={handleEditAnswerFileChange} />
+                                                <label htmlFor="edit-answer-file" className="btn-attach" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', color: '#3b82f6' }}>
+                                                    <Paperclip size={16} />
+                                                    <span>{editAnswerFile ? editAnswerFile.name : 'Thay đổi đính kèm'}</span>
+                                                </label>
+                                            </div>
+
+                                            <div className="edit-actions" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                                                <button className="btn-secondary" onClick={handleCancelEditAnswer} disabled={sendingAnswer}>
+                                                    <X size={16} /> Hủy
+                                                </button>
+                                                <button className="btn-primary" onClick={handleSaveAnswerEdit} disabled={sendingAnswer}>
+                                                    <Save size={16} /> {sendingAnswer ? 'Đang lưu...' : 'Cập nhật'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <p style={{ whiteSpace: 'pre-line' }}>{latestAnswer.noiDung}</p>
+                                            {latestAnswer.fileName && (
+                                                <div className="attachment-box">
+                                                    <Paperclip size={14} />
+                                                    <a href={latestAnswer.fileDownloadUrl || `${API_BASE}/api/questions/versions/${latestAnswer.versionId}/file`} target="_blank" rel="noopener noreferrer">
+                                                        {latestAnswer.fileName}
+                                                    </a>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* History Button (If history exists and > 1 version) */}
+                    {answerHistory.length > 1 && (
+                        <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                            <button
+                                onClick={() => setShowHistory(!showHistory)}
+                                style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#64748b',
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    fontSize: '0.9rem'
+                                }}
+                            >
+                                <History size={16} />
+                                {showHistory ? 'Ẩn lịch sử chỉnh sửa' : 'Xem lịch sử chỉnh sửa'}
+                            </button>
+                        </div>
+                    )}
+
+                    {/* History List */}
+                    {showHistory && (
+                        <div className="history-list" style={{ marginTop: '1rem', borderTop: '1px solid #e2e8f0', paddingTop: '1rem' }}>
+                            <h4 style={{ marginBottom: '1rem', color: '#475569' }}>Lịch sử chỉnh sửa:</h4>
+                            {answerHistory.map((item) => (
+                                <div key={item.version} className="history-item" style={{
+                                    padding: '1rem',
+                                    backgroundColor: '#f8fafc',
+                                    borderRadius: '8px',
+                                    marginBottom: '0.5rem',
+                                    border: '1px solid #e2e8f0'
+                                }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                                        <span style={{ fontWeight: '600', color: '#334155' }}>Phiên bản {item.version}</span>
+                                        <span style={{ fontSize: '0.85rem', color: '#64748b' }}>{formatDate(item.thoiGianTao)}</span>
+                                    </div>
+                                    <p style={{ whiteSpace: 'pre-line', fontSize: '0.95rem', color: '#1e293b' }}>{item.noiDung}</p>
+                                    {item.fileName && (
+                                        <div className="attachment-box" style={{ marginTop: '0.5rem' }}>
                                             <Paperclip size={14} />
-                                            <a href={`${API_BASE}/api/questions/versions/${latestAnswer.versionId}/file`} target="_blank" rel="noopener noreferrer">
-                                                {latestAnswer.fileName}
+                                            <a href={item.downloadUrl || `${API_BASE}/api/questions/versions/${item.version}/file`} target="_blank" rel="noopener noreferrer">
+                                                {item.fileName}
                                             </a>
                                         </div>
                                     )}
                                 </div>
-                            </div>
+                            ))}
                         </div>
                     )}
                 </div>

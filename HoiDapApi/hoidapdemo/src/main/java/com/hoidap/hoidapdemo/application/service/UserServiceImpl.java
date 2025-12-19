@@ -245,6 +245,40 @@ public class UserServiceImpl implements UserServicePort {
         throw new IllegalArgumentException("Không tìm thấy user với email: " + email);
     }
 
+    @Override
+    @Transactional
+    public void changePassword(String email, String currentPassword, String newPassword) {
+        if (newPassword == null || newPassword.isBlank()) {
+            throw new IllegalArgumentException("Mật khẩu mới không được để trống");
+        }
+
+        // Check SinhVien
+        var svOpt = sinhVienRepo.findByEmail(email);
+        if (svOpt.isPresent()) {
+            SinhVienJpaEntity sv = svOpt.get();
+            if (!passwordEncoder.matches(currentPassword, sv.getPassword())) {
+                throw new IllegalArgumentException("Mật khẩu hiện tại không đúng");
+            }
+            sv.setPassword(passwordEncoder.encode(newPassword));
+            sinhVienRepo.save(sv);
+            return;
+        }
+
+        // Check CVHT
+        var cvhtOpt = cvhtRepo.findByEmail(email);
+        if (cvhtOpt.isPresent()) {
+            CVHTJpaEntity cv = cvhtOpt.get();
+            if (!passwordEncoder.matches(currentPassword, cv.getPassword())) {
+                throw new IllegalArgumentException("Mật khẩu hiện tại không đúng");
+            }
+            cv.setPassword(passwordEncoder.encode(newPassword));
+            cvhtRepo.save(cv);
+            return;
+        }
+
+        throw new IllegalArgumentException("Không tìm thấy người dùng với email: " + email);
+    }
+
     // Admin SinhVien
     @Override
     public List<SinhVienJpaEntity> getAllSinhVien() {

@@ -17,7 +17,7 @@ const ProcessingQuestions = ({ onNavigate }) => {
     const [classFilter, setClassFilter] = useState('');
     const [cohortFilter, setCohortFilter] = useState('');
     const [majorFilter, setMajorFilter] = useState('');
-    const [yearFilter, setYearFilter] = useState(new Date().getFullYear());
+    const [yearFilter, setYearFilter] = useState('');
 
     // Data for dropdowns
     const [classes, setClasses] = useState([]);
@@ -136,77 +136,7 @@ const ProcessingQuestions = ({ onNavigate }) => {
                 <h1 className="page-title" style={{ marginBottom: '1.5rem' }}>Lịch sử trả lời</h1>
 
                 {/* Filter Bar */}
-                {/* Filter Bar */}
-                <div className="filter-bar">
-                    <div className="filter-group">
-                        <label className="filter-label">Chuyên Ngành</label>
-                        <select
-                            className="filter-input"
-                            value={majorFilter}
-                            onChange={(e) => { setMajorFilter(e.target.value); setPage(0); }}
-                        >
-                            <option value="">Tất cả ngành</option>
-                            {Array.isArray(majors) && majors.map((m, index) => (
-                                <option key={index} value={m}>{m}</option>
-                            ))}
-                        </select>
-                    </div>
 
-                    <div className="filter-group">
-                        <label className="filter-label">Khóa</label>
-                        <select
-                            className="filter-input"
-                            value={cohortFilter}
-                            onChange={(e) => { setCohortFilter(e.target.value); setPage(0); }}
-                        >
-                            <option value="">Tất cả khóa</option>
-                            {Array.isArray(cohorts) && cohorts.map((c, index) => (
-                                <option key={index} value={c}>{c}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="filter-group">
-                        <label className="filter-label">Lớp</label>
-                        <select
-                            className="filter-input"
-                            value={classFilter}
-                            onChange={(e) => { setClassFilter(e.target.value); setPage(0); }}
-                        >
-                            <option value="">Tất cả lớp</option>
-                            {Array.isArray(classes) && classes.map((c, index) => (
-                                <option key={index} value={c}>{c}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="filter-group">
-                        <label className="filter-label">Năm</label>
-                        <select
-                            className="filter-input"
-                            value={yearFilter}
-                            onChange={(e) => { setYearFilter(Number(e.target.value)); setPage(0); }}
-                        >
-                            {years.map((y) => (
-                                <option key={y} value={y}>{y}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    <div className="search-wrapper" style={{ flex: 1, marginLeft: '1.5rem', position: 'relative' }}>
-                        <div style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }}>
-                            <svg xmlns="http://www.w3.org/2001/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                        </div>
-                        <input
-                            type="text"
-                            className="filter-input"
-                            style={{ width: '100%', paddingLeft: '36px' }}
-                            placeholder="Nhập từ khóa tìm kiếm..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-                </div>
 
                 {loading ? <p style={{ padding: '20px', textAlign: 'center' }}>Đang tải...</p> : (
                     <>

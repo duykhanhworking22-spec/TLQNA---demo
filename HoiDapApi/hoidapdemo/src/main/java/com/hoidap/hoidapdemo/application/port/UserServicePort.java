@@ -17,6 +17,8 @@ public interface UserServicePort {
 
     void updateProfile(String email, ProfileUpdateRequest request);
 
+    void changePassword(String email, String currentPassword, String newPassword);
+
     List<SinhVienJpaEntity> getAllSinhVien();
 
     SinhVienJpaEntity getSinhVienById(String id);

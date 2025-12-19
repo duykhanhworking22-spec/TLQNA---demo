@@ -47,6 +47,7 @@ adminInstance.interceptors.request.use(
 export const authApi = {
     login: (email, password) => api.post('/auth/login', { email, password }),
     updateProfile: (data) => api.post('/auth/profile/update', data),
+    changePassword: (data) => api.post('/auth/password/change', data),
 };
 
 // User APIs (Using 8080)
