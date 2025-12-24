@@ -1,32 +1,54 @@
 import React from 'react';
-import { Home, PlusCircle, Book, User, Menu } from 'lucide-react';
+import { Home, PlusCircle, Book, User, LogOut, BarChart2, BookOpen, FileText, CheckCircle } from 'lucide-react';
+import { useNotification } from '../contexts/NotificationContext';
 import './MobileNavbar.css';
 
 const MobileNavbar = ({ activePage, onNavigate, userRole }) => {
+    const { showConfirm } = useNotification();
+
+    const handleLogout = async () => {
+        const confirmed = await showConfirm('Bạn có chắc chắn muốn đăng xuất?');
+        if (confirmed) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            localStorage.removeItem('currentPage');
+            localStorage.removeItem('previousPage');
+            localStorage.removeItem('selectedQuestionId');
+            localStorage.removeItem('navigationParams');
+            window.location.href = '/';
+        }
+    };
 
     // Define navigation items based on role
     const getNavItems = () => {
+        const commonItems = [];
+
         if (userRole === 'cvht') {
-            return [
-                { id: 'pending', icon: <Home size={24} />, label: 'Chờ xử lý' },
-                { id: 'processing', icon: <Book size={24} />, label: 'Đang xử lý' },
-                { id: 'knowledge', icon: <Book size={24} />, label: 'Kiến thức' },
-                { id: 'profile', icon: <User size={24} />, label: 'Cá nhân' }
-            ];
+            commonItems.push(
+                { id: 'pending', icon: <FileText size={20} />, label: 'Câu hỏi' },
+                { id: 'processing', icon: <CheckCircle size={20} />, label: 'Lịch sử' },
+                { id: 'knowledge', icon: <BookOpen size={20} />, label: 'FAQ' },
+                { id: 'reports', icon: <BarChart2 size={20} />, label: 'Báo cáo' },
+                { id: 'profile', icon: <User size={20} />, label: 'Cá nhân' }
+            );
         } else if (userRole === 'admin') {
-            return [
-                { id: 'admin-reports', icon: <Home size={24} />, label: 'Báo cáo' },
-                // Add more admin items if needed
-            ];
+            commonItems.push(
+                { id: 'admin-reports', icon: <BarChart2 size={20} />, label: 'Báo cáo' },
+                { id: 'question-bank', icon: <FileText size={20} />, label: 'Câu hỏi' },
+                { id: 'faq-management', icon: <BookOpen size={20} />, label: 'FAQ' },
+                { id: 'profile', icon: <User size={20} />, label: 'Cá nhân' }
+            );
         } else {
             // Student
-            return [
-                { id: 'my-question', icon: <Home size={24} />, label: 'Trang chủ' },
-                { id: 'new-question', icon: <PlusCircle size={24} />, label: 'Hỏi đáp' },
-                { id: 'question-bank', icon: <Book size={24} />, label: 'Kho tin' },
-                { id: 'profile', icon: <User size={24} />, label: 'Cá nhân' }
-            ];
+            commonItems.push(
+                { id: 'my-question', icon: <Home size={20} />, label: 'Trang chủ' },
+                { id: 'new-question', icon: <PlusCircle size={20} />, label: 'Hỏi đáp' },
+                { id: 'question-bank', icon: <Book size={20} />, label: 'Kho tin' },
+                { id: 'profile', icon: <User size={20} />, label: 'Cá nhân' }
+            );
         }
+
+        return commonItems;
     };
 
     const navItems = getNavItems();
@@ -45,6 +67,16 @@ const MobileNavbar = ({ activePage, onNavigate, userRole }) => {
                     <span className="nav-label">{item.label}</span>
                 </button>
             ))}
+
+            <button
+                className="mobile-nav-item logout-btn-mobile"
+                onClick={handleLogout}
+            >
+                <div className="nav-icon">
+                    <LogOut size={24} />
+                </div>
+                <span className="nav-label">Đăng xuất</span>
+            </button>
         </nav>
     );
 };

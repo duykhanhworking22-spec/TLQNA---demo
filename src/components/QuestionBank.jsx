@@ -38,7 +38,8 @@ const QuestionBank = ({ onNavigate, initialSearch }) => {
             const params = {
                 trangThai: 'ANSWER',
                 page: page,
-                size: 10
+                size: 10,
+                isPublic: true // Allow viewing public repository
             };
 
             if (searchTerm) params.keyword = searchTerm;

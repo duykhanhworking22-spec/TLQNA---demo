@@ -1,0 +1,24 @@
+package com.hoidap.hoidapdemo.entity.faq;
+
+import jakarta.persistence.*;
+import lombok.Data;
+
+@Entity
+@Table(name = "faq")
+@Data
+public class FAQJpaEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long maFaq; // Tá»± tÄƒng
+
+    private String chuDe;
+    private String tieuDe;
+
+    @Column(columnDefinition = "TEXT")
+    private String noiDung;
+
+    private String khoaVien;
+    private String khoaHoc;
+    private String namHoc;
+}
+

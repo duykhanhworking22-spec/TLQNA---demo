@@ -285,38 +285,86 @@
 }
 
 /* Responsive */
+/* Responsive */
 @media (max-width: 768px) {
     .qbank-layout {
         grid-template-columns: 1fr;
-        gap: 1.5rem;
+        gap: 1rem;
     }
 
     .qbank-filters {
         position: static;
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 1rem;
+    }
+
+    .qbank-search-area {
+        margin-bottom: 1rem;
+    }
+
+    /* Compact Cards */
+    .qbank-card {
+        margin-bottom: 1rem;
+        border-radius: 8px;
+    }
+
+    .qbank-card-header {
+        padding: 1rem;
+    }
+
+    .header-left {
+        margin-bottom: 0.5rem;
+    }
+
+    .question-title-full {
+        font-size: 0.95rem;
+        /* Smaller title */
+        line-height: 1.4;
+    }
+
+    .question-id-badge {
+        padding: 0.15rem 0.6rem;
+        font-size: 0.75rem;
     }
 
     .question-meta-full {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
     }
 
-    .page-numbers {
-        max-width: 200px;
-        overflow-x: auto;
-    }
-
-    .qbank-card-header,
     .question-body,
     .answer-body,
     .card-footer {
         padding: 1rem;
     }
 
-    .time-filter-buttons {
-        flex-direction: column;
+    .question-content-text,
+    .answer-content-text {
+        font-size: 0.9rem;
+        line-height: 1.6;
     }
 
-    .time-btn {
+    .btn-view-detail-full {
         width: 100%;
+        padding: 0.75rem;
+    }
+
+    /* Compact Pagination */
+    .page-numbers {
+        gap: 0.2rem;
+    }
+
+    .page-number,
+    .page-btn {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
     }
 }
 

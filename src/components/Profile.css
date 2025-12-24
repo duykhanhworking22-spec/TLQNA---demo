@@ -297,3 +297,75 @@
 .font-mono {
     font-family: 'Courier New', Courier, monospace;
 }
+
+/* Mobile Specific */
+@media (max-width: 768px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-top: 0;
+    }
+
+    /* Identity Card Mobile */
+    .profile-header-bg {
+        height: 100px;
+    }
+
+    .profile-avatar-container {
+        width: 100px;
+        height: 100px;
+        margin: -50px auto 1rem;
+    }
+
+    .identity-info {
+        padding: 0 1rem 1.5rem;
+    }
+
+    .profile-name {
+        font-size: 1.25rem;
+    }
+
+    .profile-role {
+        font-size: 0.9rem;
+    }
+
+    /* Details Card Mobile */
+    .details-card,
+    .password-card {
+        padding: 1rem !important;
+    }
+
+    .card-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .card-header h3 {
+        font-size: 1.1rem;
+    }
+
+    .detail-item {
+        gap: 1rem;
+        align-items: flex-start;
+    }
+
+    .detail-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+    }
+
+    .detail-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .detail-content label {
+        font-size: 0.8rem;
+    }
+
+    .detail-content p,
+    .read-only-text {
+        font-size: 0.95rem;
+    }
+}

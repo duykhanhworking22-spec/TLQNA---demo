@@ -56,7 +56,8 @@ const NewQuestion = ({ onNavigate }) => { // Accept onNavigate prop
                 const params = {
                     keyword: title,
                     status: 'ANSWER',
-                    size: 5 // Fetch up to 5 items to populate suggestions
+                    size: 5, // Fetch up to 5 items to populate suggestions
+                    isPublic: true // Search GLOBAL knowledge base
                 };
 
                 // Note: Removed 'department' filtering to ensure GLOBAL search for suggestions.

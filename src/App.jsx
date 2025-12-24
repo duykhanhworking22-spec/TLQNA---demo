@@ -14,6 +14,7 @@ import CVHTReports from './components/CVHTReports'
 import Login from './components/Login'
 import { NotificationProvider } from './contexts/NotificationContext'
 import NotificationContainer from './components/NotificationContainer'
+import AdminSidebar from './components/AdminSidebar'
 import AdminReports from './components/AdminReports'
 import MobileNavbar from './components/MobileNavbar'
 import './App.css'
@@ -113,7 +114,23 @@ function App() {
     }
 
     if (userRole === 'admin') {
-      return <AdminReports onNavigate={handleNavigate} />;
+      switch (currentPage) {
+        case 'admin-reports':
+          return <AdminReports onNavigate={handleNavigate} />;
+        case 'question-bank':
+          return <QuestionBank onNavigate={handleNavigate} initialSearch={navigationParams.search} />;
+        case 'faq-management':
+          return <FAQ />;
+        case 'profile':
+          return <Profile userRole={userRole} />;
+        case 'question-detail':
+          return <QuestionDetail
+            questionId={selectedQuestionId}
+            onBack={() => handleNavigate(previousPage || 'question-bank')}
+          />;
+        default:
+          return <AdminReports onNavigate={handleNavigate} />;
+      }
     }
 
     if (userRole === 'cvht') {
@@ -167,9 +184,11 @@ function App() {
   return (
     <NotificationProvider>
       <div className="app-container">
-        {userRole && userRole !== 'admin' && (
+        {userRole && (
           userRole === 'cvht' ? (
             <CVHTSidebar activePage={currentPage} onNavigate={handleNavigate} />
+          ) : userRole === 'admin' ? (
+            <AdminSidebar activePage={currentPage} onNavigate={handleNavigate} />
           ) : (
             <Sidebar activePage={currentPage} onNavigate={handleNavigate} />
           )

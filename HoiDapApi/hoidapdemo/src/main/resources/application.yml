@@ -3,6 +3,11 @@ server:
   error:
     include-message: always
     include-binding-errors: always
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
 
 spring:
   datasource:

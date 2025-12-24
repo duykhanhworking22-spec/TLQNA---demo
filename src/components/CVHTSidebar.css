@@ -101,3 +101,10 @@
     background-color: #fef2f2;
     color: #ef4444;
 }
+
+/* Hide Sidebar on Mobile */
+@media (max-width: 768px) {
+    .cvht-sidebar {
+        display: none;
+    }
+}
