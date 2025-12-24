@@ -1,16 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import api, { userApi, questionApi } from '../services/api';
-import { Send, Paperclip, X } from 'lucide-react';
+import { Send, Paperclip, X, Sparkles, Loader, ChevronRight, Lightbulb } from 'lucide-react';
 import './QuestionList.css'; // Common styles
 import './NewQuestion.css';
+import { useNotification } from '../contexts/NotificationContext';
 
-const NewQuestion = () => {
+const NewQuestion = ({ onNavigate }) => { // Accept onNavigate prop
+    const { showNotification } = useNotification();
     const [title, setTitle] = useState('');
     const [department, setDepartment] = useState('HOCTAP'); // Default domain/field
     const [content, setContent] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     const [loading, setLoading] = useState(false);
     const [cvhtInfo, setCvhtInfo] = useState('');
+
+    // Topic Auto-complete States
+    const [filteredTopics, setFilteredTopics] = useState([]);
+    const [showTopicSuggestions, setShowTopicSuggestions] = useState(false);
+
+    // AI Suggestion States
+    const [suggestions, setSuggestions] = useState([]);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [showSuggestions, setShowSuggestions] = useState(false);
 
     React.useEffect(() => {
         // Fetch current user profile to get CVHT info via the new API
@@ -28,6 +39,76 @@ const NewQuestion = () => {
             .catch(err => console.error("Error fetching profile", err));
     }, []);
 
+    // Unified Dynamic Suggestion Logic
+    useEffect(() => {
+        const analyzeInput = async () => {
+            if (title.trim().length < 2) {
+                setSuggestions([]);
+                setFilteredTopics([]);
+                setShowSuggestions(false);
+                setShowTopicSuggestions(false);
+                return;
+            }
+
+            setIsAnalyzing(true);
+            try {
+                // Fetch dynamic data from backend (answered questions only)
+                const params = {
+                    keyword: title,
+                    status: 'ANSWER',
+                    size: 5 // Fetch up to 5 items to populate suggestions
+                };
+
+                // Note: Removed 'department' filtering to ensure GLOBAL search for suggestions.
+                // We want to suggest topics regardless of the currently selected department in the form.
+
+                const response = await questionApi.getAll(params);
+
+                if (response.data && response.data.data && response.data.data.content) {
+                    const foundQuestions = response.data.data.content;
+
+                    // 1. Populate "Similar Questions" (Blue section - for reading answers)
+                    setSuggestions(foundQuestions);
+                    setShowSuggestions(foundQuestions.length > 0);
+
+                    // 2. Populate "Topic Suggestions" (Green section - for auto-complete)
+                    // Extract unique titles from the found questions
+                    const uniqueTitles = [...new Set(foundQuestions.map(q => q.tieuDe))];
+                    // Filter out titles that are identical to what user typed (no need to suggest what they already wrote)
+                    const usefulTitles = uniqueTitles.filter(t => t.trim().toLowerCase() !== title.trim().toLowerCase());
+
+                    setFilteredTopics(usefulTitles);
+                    setShowTopicSuggestions(usefulTitles.length > 0);
+                } else {
+                    setSuggestions([]);
+                    setFilteredTopics([]);
+                    setShowSuggestions(false);
+                    setShowTopicSuggestions(false);
+                }
+            } catch (error) {
+                console.error("Analysis failed:", error);
+            } finally {
+                setIsAnalyzing(false);
+            }
+        };
+
+        const timeoutId = setTimeout(analyzeInput, 500);
+        return () => clearTimeout(timeoutId);
+    }, [title]); // Removed 'department' dependency as it's no longer used in search
+
+    const handleTopicSelect = (topic) => {
+        // Redirect to Question Bank with this topic as search term
+        if (onNavigate) {
+            onNavigate('question-bank', { search: topic });
+        }
+    };
+
+    const handleSuggestionClick = (questionId) => {
+        if (onNavigate) {
+            onNavigate('question-detail', { id: questionId });
+        }
+    };
+
     const handleFileChange = (e) => {
         if (e.target.files && e.target.files[0]) {
             setSelectedFile(e.target.files[0]);
@@ -36,7 +117,7 @@ const NewQuestion = () => {
 
     const handleSubmit = async () => {
         if (!title.trim() || !content.trim()) {
-            alert('Vui lòng nhập đầy đủ tiêu đề và nội dung.');
+            showNotification('Vui lòng nhập đầy đủ tiêu đề và nội dung.', 'warning');
             return;
         }
 
@@ -53,7 +134,7 @@ const NewQuestion = () => {
             const response = await questionApi.create(formData);
 
             if (response.data && response.data.status === 200) {
-                alert('Gửi câu hỏi thành công!');
+                showNotification('Gửi câu hỏi thành công!', 'success');
                 // Reset form
                 setTitle('');
                 setContent('');
@@ -61,7 +142,8 @@ const NewQuestion = () => {
             }
         } catch (error) {
             console.error('Lỗi khi gửi câu hỏi:', error);
-            alert('Gửi thất bại. Vui lòng thử lại.');
+            const errorMessage = error.response?.data?.message || 'Gửi thất bại. Vui lòng thử lại.';
+            showNotification(errorMessage, 'error');
         } finally {
             setLoading(false);
         }
@@ -82,16 +164,76 @@ const NewQuestion = () => {
                 <h1 className="page-title">Gửi câu hỏi mới</h1>
 
                 <div className="form-card">
-                    <div className="form-group">
+                    <div className="form-group relative-container">
                         <label htmlFor="title">Chủ đề câu hỏi <span className="highlight">*</span></label>
-                        <input
-                            type="text"
-                            id="title"
-                            className="form-input"
-                            placeholder="Nhập tiêu đề ngắn gọn cho câu hỏi..."
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                        />
+                        <div className="input-with-icon">
+                            <input
+                                type="text"
+                                id="title"
+                                className="form-input"
+                                placeholder="Nhập tiêu đề ngắn gọn cho câu hỏi..."
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                autoComplete="off"
+                            />
+                            {isAnalyzing && <Loader className="input-loader spin" size={18} />}
+                        </div>
+
+                        {/* Combined Suggestions Dropdown */}
+                        {(showTopicSuggestions || (showSuggestions && suggestions.length > 0)) && (
+                            <div className="ai-suggestions-dropdown">
+                                {/* Topic Suggestions Section */}
+                                {showTopicSuggestions && (
+                                    <>
+                                        <div className="ai-header" style={{ background: '#f0fdf4', color: '#15803d', borderBottomColor: '#bbf7d0' }}>
+                                            <Lightbulb size={16} className="ai-icon" style={{ color: '#16a34a' }} />
+                                            <span>Gợi ý chủ đề:</span>
+                                        </div>
+                                        <div className="suggestions-list">
+                                            {filteredTopics.map((topic, index) => (
+                                                <div
+                                                    key={`topic-${index}`}
+                                                    className="suggestion-item"
+                                                    onClick={() => handleTopicSelect(topic)}
+                                                >
+                                                    <div className="suggestion-content">
+                                                        <span className="suggestion-title">{topic}</span>
+                                                    </div>
+                                                    <ChevronRight size={16} className="arrow-icon" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+
+                                {/* AI/Similar Question Suggestions Section */}
+                                {showSuggestions && suggestions.length > 0 && (
+                                    <>
+                                        <div className="ai-header">
+                                            <Sparkles size={16} className="ai-icon" />
+                                            <span>Những câu hỏi tương tự đã có câu trả lời:</span>
+                                        </div>
+                                        <div className="suggestions-list">
+                                            {suggestions.map((q) => (
+                                                <div
+                                                    key={q.maCauHoi}
+                                                    className="suggestion-item"
+                                                    onClick={() => handleSuggestionClick(q.maCauHoi)}
+                                                >
+                                                    <div className="suggestion-content">
+                                                        <span className="suggestion-title">{q.tieuDe}</span>
+                                                        <span className="suggestion-snippet">
+                                                            {q.noiDung && q.noiDung.length > 60 ? q.noiDung.substring(0, 60) + '...' : q.noiDung}
+                                                        </span>
+                                                    </div>
+                                                    <ChevronRight size={16} className="arrow-icon" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="form-group">

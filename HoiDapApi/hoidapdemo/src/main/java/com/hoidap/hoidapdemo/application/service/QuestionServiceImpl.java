@@ -59,9 +59,20 @@ public class QuestionServiceImpl {
         }
         CVHTJpaEntity cvht = sv.getLop().getCvht();
 
+        // 2024-12-24: Check daily limit (MAX 3 questions/day)
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
+        LocalDateTime endOfDay = now.toLocalDate().atTime(23, 59, 59);
+
+        long countToday = questionRepo.countBySinhVien_MaSvAndNgayGuiBetween(maSv, startOfDay, endOfDay);
+        if (countToday >= 3) {
+            throw new IllegalStateException("Bạn đã đạt tới giới hạn 3 câu hỏi / ngày, vui lòng quay lại vào ngày mai");
+        }
+
         QuestionJpaEntity question = new QuestionJpaEntity();
         question.setTieuDe(request.getTieuDe());
         question.setNoiDung(request.getNoiDung());
+        question.setLinhVuc(request.getLinhVuc());
         question.setNgayGui(LocalDateTime.now());
         question.setTrangThai(QuestionStatus.PENDING);
         question.setSinhVien(sv);
@@ -124,6 +135,7 @@ public class QuestionServiceImpl {
 
         question.setTieuDe(request.getTieuDe());
         question.setNoiDung(request.getNoiDung());
+        question.setLinhVuc(request.getLinhVuc());
         question.setNgayCapNhatCuoi(LocalDateTime.now());
 
         try {
@@ -145,6 +157,10 @@ public class QuestionServiceImpl {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy câu hỏi"));
         if (q.getCvht() == null || !q.getCvht().getEmail().equals(emailCvht)) {
             throw new SecurityException("Bạn không có quyền truy cập!");
+        }
+
+        if (q.getTrangThai() == QuestionStatus.REPORTED) {
+            throw new IllegalStateException("Câu hỏi đã bị báo cáo vi phạm và không thể trả lời.");
         }
 
         AnswerJpaEntity answer = answerRepo.findByQuestion_MaCauHoi(questionId)
@@ -184,6 +200,16 @@ public class QuestionServiceImpl {
         questionRepo.save(q);
     }
 
+    @Transactional
+    public void reportQuestion(Long id, String reason) {
+        QuestionJpaEntity q = questionRepo.findById(Objects.requireNonNull(id, "ID câu hỏi không được null"))
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy câu hỏi"));
+
+        q.setTrangThai(QuestionStatus.REPORTED);
+        q.setLyDoBaoCao(reason);
+        questionRepo.save(q);
+    }
+
     private QuestionResponse mapToResponse(QuestionJpaEntity q) {
         String downloadUri = null;
         if (q.getFileData() != null) {
@@ -199,6 +225,7 @@ public class QuestionServiceImpl {
                 .maCauHoi(q.getMaCauHoi())
                 .tieuDe(q.getTieuDe())
                 .noiDung(q.getNoiDung())
+                .linhVuc(q.getLinhVuc())
                 .trangThai(q.getTrangThai().toString())
                 .ngayGui(q.getNgayGui())
                 .ngayCapNhatCuoi(q.getNgayCapNhatCuoi())
@@ -211,6 +238,7 @@ public class QuestionServiceImpl {
                 .chuyenNganh(q.getSinhVien().getLop() != null ? q.getSinhVien().getLop().getChuyenNganh() : null)
                 .fileName(q.getFileName())
                 .fileDownloadUri(downloadUri)
+                .lyDoBaoCao(q.getLyDoBaoCao())
                 .build();
     }
 
@@ -255,6 +283,7 @@ public class QuestionServiceImpl {
 
         q.setTieuDe(request.getTieuDe());
         q.setNoiDung(request.getNoiDung());
+        q.setLinhVuc(request.getLinhVuc());
         questionRepo.save(q);
     }
 

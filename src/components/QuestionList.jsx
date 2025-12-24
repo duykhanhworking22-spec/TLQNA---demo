@@ -59,6 +59,8 @@ const QuestionList = ({ onNavigate }) => {
             case 'COMPLETED':
             case '1': return 'completed'; // Đã trả lời/Xong
             case 'REJECTED': return 'rejected';
+            case 'REPORTED':
+            case '2': return 'reported';
             default: return '';
         }
     };
@@ -72,6 +74,8 @@ const QuestionList = ({ onNavigate }) => {
             case '1': return 'Đã trả lời';
             case 'COMPLETED': return 'Hoàn thành';
             case 'REJECTED': return 'Từ chối';
+            case 'REPORTED':
+            case '2': return 'Bị báo cáo';
             default: return status;
         }
     };

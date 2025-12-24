@@ -11,6 +11,7 @@ public class QuestionResponse {
     private Long maCauHoi;
     private String tieuDe;
     private String noiDung;
+    private String linhVuc;
     private String trangThai;
     private LocalDateTime ngayGui;
     private LocalDateTime ngayCapNhatCuoi;
@@ -26,4 +27,5 @@ public class QuestionResponse {
 
     private String fileDownloadUri;
     private String fileName;
+    private String lyDoBaoCao;
 }

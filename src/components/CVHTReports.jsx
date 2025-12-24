@@ -3,8 +3,10 @@ import { BarChart, PieChart, Calendar, Download } from 'lucide-react';
 import './QuestionList.css';
 import './CVHTDashboard.css'; // Recycle dashboard styles for charts
 import api from '../services/api';
+import { useNotification } from '../contexts/NotificationContext';
 
 const CVHTReports = () => {
+    const { showNotification } = useNotification();
     const [stats, setStats] = useState({
         totalQuestions: 0,
         totalAnswered: 0,
@@ -38,7 +40,7 @@ const CVHTReports = () => {
             link.remove();
         } catch (error) {
             console.error("Export failed", error);
-            alert("Xuất báo cáo thất bại.");
+            showNotification("Xuất báo cáo thất bại.", 'error');
         } finally {
             setIsExporting(false);
         }

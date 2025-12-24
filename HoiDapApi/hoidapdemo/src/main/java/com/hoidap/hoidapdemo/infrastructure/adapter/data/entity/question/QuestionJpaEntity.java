@@ -14,50 +14,48 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 public class QuestionJpaEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ma_cau_hoi")
-    private Long maCauHoi;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "ma_cau_hoi")
+        private Long maCauHoi;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "ma_sv",
-            referencedColumnName = "ma_sv",
-            nullable = false
-    )
-    private SinhVienJpaEntity sinhVien;
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "ma_sv", referencedColumnName = "ma_sv", nullable = false)
+        private SinhVienJpaEntity sinhVien;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "ma_cv",
-            referencedColumnName = "ma_cv",
-            nullable = false
-    )
-    private CVHTJpaEntity cvht;
+        @ManyToOne(fetch = FetchType.LAZY)
+        @JoinColumn(name = "ma_cv", referencedColumnName = "ma_cv", nullable = false)
+        private CVHTJpaEntity cvht;
 
-    @Column(name = "tieude", length = 255)
-    private String tieuDe;
+        @Column(name = "tieude", length = 255)
+        private String tieuDe;
 
-    @Column(name = "noidung", columnDefinition = "TEXT")
-    private String noiDung;
+        @Column(name = "noidung", columnDefinition = "TEXT")
+        private String noiDung;
 
-    @Column(name = "ngaygui", nullable = false)
-    private LocalDateTime ngayGui;
+        @Column(name = "linh_vuc")
+        private String linhVuc;
 
-    @Column(name = "ngaycapnhatcuoi")
-    private LocalDateTime ngayCapNhatCuoi;
+        @Column(name = "ngaygui", nullable = false)
+        private LocalDateTime ngayGui;
 
-    @Convert(converter = QuestionStatusConverter.class)
-    @Column(name = "trangthai")
-    private QuestionStatus trangThai;
+        @Column(name = "ngaycapnhatcuoi")
+        private LocalDateTime ngayCapNhatCuoi;
 
-    @Column(name = "file_name")
-    private String fileName;
+        @Convert(converter = QuestionStatusConverter.class)
+        @Column(name = "trangthai")
+        private QuestionStatus trangThai;
 
-    @Column(name = "file_type")
-    private String fileType;
+        @Column(name = "file_name")
+        private String fileName;
 
-    @Lob
-    @Column(name = "file_data", columnDefinition = "LONGBLOB")
-    private byte[] fileData;
+        @Column(name = "file_type")
+        private String fileType;
+
+        @Lob
+        @Column(name = "file_data", columnDefinition = "LONGBLOB")
+        private byte[] fileData;
+
+        @Column(name = "ly_do_bao_cao", columnDefinition = "TEXT")
+        private String lyDoBaoCao;
 }

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { User, FileText, CheckCircle, BookOpen, BarChart2, LogOut, LayoutDashboard } from 'lucide-react';
 import './CVHTSidebar.css';
+import { useNotification } from '../contexts/NotificationContext';
 
 const CVHTSidebar = ({ activePage, onNavigate }) => {
+    const { showConfirm } = useNotification();
     const [userData, setUserData] = useState({
         name: "CVHT",
         role: "Giảng viên"
@@ -30,9 +32,10 @@ const CVHTSidebar = ({ activePage, onNavigate }) => {
         }
     }, []);
 
-    const handleLogout = (e) => {
+    const handleLogout = async (e) => {
         e.preventDefault();
-        if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+        const confirmed = await showConfirm('Bạn có chắc chắn muốn đăng xuất?');
+        if (confirmed) {
             localStorage.removeItem('token');
             localStorage.removeItem('role');
             window.location.href = '/'; // Reload to login

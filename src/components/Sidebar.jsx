@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { LayoutDashboard, MessageSquare, PlusCircle, BookOpen, User, LogOut } from 'lucide-react';
+import { LayoutDashboard, MessageSquare, PlusCircle, BookOpen, User, LogOut, Library } from 'lucide-react';
 import './Sidebar.css';
+import { useNotification } from '../contexts/NotificationContext';
 
 const Sidebar = ({ activePage, onNavigate }) => {
+    const { showConfirm } = useNotification();
     // Default to 'my-question' if undefined
     const current = activePage || 'my-question';
 
@@ -33,9 +35,10 @@ const Sidebar = ({ activePage, onNavigate }) => {
         }
     }, []);
 
-    const handleLogout = (e) => {
+    const handleLogout = async (e) => {
         e.preventDefault();
-        if (confirm('Bạn có chắc chắn muốn đăng xuất?')) {
+        const confirmed = await showConfirm('Bạn có chắc chắn muốn đăng xuất?');
+        if (confirmed) {
             localStorage.removeItem('token');
             localStorage.removeItem('role');
             window.location.href = '/';
@@ -77,6 +80,14 @@ const Sidebar = ({ activePage, onNavigate }) => {
                 >
                     <BookOpen size={20} />
                     <span>Kho kiến thức (FAQ)</span>
+                </a>
+                <a
+                    href="#"
+                    className={`nav-item ${current === 'question-bank' ? 'active' : ''}`}
+                    onClick={(e) => { e.preventDefault(); onNavigate('question-bank'); }}
+                >
+                    <Library size={20} />
+                    <span>Kho câu hỏi</span>
                 </a>
                 <a
                     href="#"

@@ -22,4 +22,6 @@ public class QuestionFilter {
     private String maLop;
     private String khoaHoc;
     private String chuyenNganh;
+    private String linhVuc;
+    private java.util.List<QuestionStatus> statuses;
 }

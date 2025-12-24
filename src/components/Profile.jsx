@@ -3,8 +3,10 @@ import { User, Mail, Phone, MapPin, Calendar, Camera, Edit3, Save, X, Lock, Eye,
 import './QuestionList.css'; // Re-use common styles
 import './Profile.css';
 import api, { userApi, authApi } from '../services/api';
+import { useNotification } from '../contexts/NotificationContext';
 
 const Profile = ({ userRole }) => {
+    const { showNotification, showConfirm } = useNotification();
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(true);
     const [profileData, setProfileData] = useState({
@@ -84,7 +86,8 @@ const Profile = ({ userRole }) => {
     };
 
     const handleSave = async () => {
-        if (!confirm('Bạn có chắc chắn muốn cập nhật thông tin?')) return;
+        const confirmed = await showConfirm('Bạn có chắc chắn muốn cập nhật thông tin?');
+        if (!confirmed) return;
 
         try {
             // Updated to use the new authApi.updateProfile method which calls /api/auth/profile/update
@@ -93,12 +96,12 @@ const Profile = ({ userRole }) => {
                 chuyenMon: profileData.faculty,
                 soDienThoai: profileData.phone
             });
-            alert('Cập nhật hồ sơ thành công!');
+            showNotification('Cập nhật hồ sơ thành công!', 'success');
             setIsEditing(false);
             fetchProfile(); // Refresh data
         } catch (error) {
             console.error(error);
-            alert('Cập nhật thất bại.');
+            showNotification('Cập nhật thất bại.', 'error');
         }
     };
 
@@ -125,11 +128,11 @@ const Profile = ({ userRole }) => {
 
     const submitChangePassword = async () => {
         if (passwordData.newPassword !== passwordData.confirmPassword) {
-            alert("Mật khẩu mới không khớp!");
+            showNotification("Mật khẩu mới không khớp!", 'warning');
             return;
         }
         if (passwordData.newPassword.length < 6) {
-            alert("Mật khẩu mới phải có ít nhất 6 ký tự!");
+            showNotification("Mật khẩu mới phải có ít nhất 6 ký tự!", 'warning');
             return;
         }
 
@@ -138,12 +141,12 @@ const Profile = ({ userRole }) => {
                 currentPassword: passwordData.currentPassword,
                 newPassword: passwordData.newPassword
             });
-            alert("Đổi mật khẩu thành công!");
+            showNotification("Đổi mật khẩu thành công!", 'success');
             setIsChangingPassword(false);
             setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
         } catch (error) {
             console.error(error);
-            alert(error.response?.data?.message || "Đổi mật khẩu thất bại.");
+            showNotification(error.response?.data?.message || "Đổi mật khẩu thất bại.", 'error');
         }
     };
 

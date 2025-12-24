@@ -1,0 +1,383 @@
+/* Question Bank Specific Styles */
+.qbank-header {
+    margin-bottom: 2rem;
+}
+
+.qbank-subtitle {
+    color: #64748b;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+}
+
+.qbank-search-area {
+    margin-bottom: 2rem;
+}
+
+.qbank-search {
+    max-width: 600px;
+}
+
+.qbank-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 2rem;
+}
+
+/* Filters */
+.qbank-filters {
+    position: sticky;
+    top: 20px;
+    align-self: start;
+}
+
+.btn-apply-filter {
+    width: 100%;
+    padding: 0.75rem;
+    background: #c81e1e;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background 0.2s;
+}
+
+.btn-apply-filter:hover {
+    background: #a01818;
+}
+
+/* Question Bank List */
+.qbank-list-container {
+    min-height: 400px;
+}
+
+.qbank-stats {
+    margin-bottom: 1.5rem;
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Question Card - Full Display */
+.qbank-card {
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    transition: all 0.2s;
+}
+
+.qbank-card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+/* Card Header */
+.qbank-card-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+.qbank-card-header:hover {
+    background: #f1f5f9;
+}
+
+.qbank-card.expanded .qbank-card-header {
+    background: #eff6ff;
+    border-bottom-color: #3b82f6;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.question-id-badge {
+    display: inline-block;
+    background: #3b82f6;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.question-title-full {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+    line-height: 1.5;
+    flex: 1;
+}
+
+.question-meta-full {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+/* Card Body - Question */
+.question-body {
+    padding: 1.5rem;
+    background: white;
+}
+
+.section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #64748b;
+    margin: 0 0 0.75rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.question-content-text {
+    color: #1e293b;
+    line-height: 1.7;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* Card Body - Answer */
+.answer-body {
+    padding: 1.5rem;
+    background: #f0fdf4;
+    border-top: 1px solid #e2e8f0;
+    border-left: 4px solid #10b981;
+}
+
+.answer-label {
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.answerer-name {
+    color: #059669;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.answer-content-text {
+    color: #1e293b;
+    line-height: 1.7;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* Card Footer */
+.card-footer {
+    padding: 1rem 1.5rem;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    text-align: right;
+}
+
+.btn-view-detail-full {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.btn-view-detail-full:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #94a3b8;
+}
+
+.empty-state svg {
+    margin-bottom: 1rem;
+    color: #cbd5e1;
+}
+
+.empty-state p {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    padding: 1rem 0;
+}
+
+.page-btn {
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #475569;
+    transition: all 0.2s;
+}
+
+.page-btn:hover:not(:disabled) {
+    background: #f1f5f9;
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.page-number {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #475569;
+    transition: all 0.2s;
+}
+
+.page-number:hover {
+    background: #f1f5f9;
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.page-number.active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .qbank-layout {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .qbank-filters {
+        position: static;
+    }
+
+    .question-meta-full {
+        font-size: 0.8rem;
+    }
+
+    .page-numbers {
+        max-width: 200px;
+        overflow-x: auto;
+    }
+
+    .qbank-card-header,
+    .question-body,
+    .answer-body,
+    .card-footer {
+        padding: 1rem;
+    }
+
+    .time-filter-buttons {
+        flex-direction: column;
+    }
+
+    .time-btn {
+        width: 100%;
+    }
+}
+
+/* Time Filter Button Group */
+.time-filter-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.time-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: #475569;
+    text-align: left;
+    transition: all 0.2s;
+    width: 100%;
+}
+
+.time-btn:hover {
+    color: #1e293b;
+}
+
+/* Radio Button Simulation */
+.time-btn::before {
+    content: '';
+    display: block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #cbd5e1;
+    border-radius: 50%;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    background: white;
+}
+
+.time-btn:hover::before {
+    border-color: #94a3b8;
+}
+
+.time-btn.active {
+    color: #1e293b;
+    background: transparent;
+    border: none;
+    font-weight: 500;
+}
+
+.time-btn.active::before {
+    border-color: #3b82f6;
+    border-width: 4px;
+    /* Creates the dot effect */
+}
+
+.time-btn.active:hover {
+    background: transparent;
+    border: none;
+}

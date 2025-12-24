@@ -7,5 +7,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class QuestionRequest {
     private String tieuDe;
     private String noiDung;
+    private String linhVuc;
     private MultipartFile file;
 }

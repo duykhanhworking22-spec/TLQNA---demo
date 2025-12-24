@@ -59,8 +59,10 @@ const Login = ({ onLogin }) => {
                 if (decoded) {
                     // Check common claim names
                     const rawRole = decoded.role || decoded.roles || decoded.scope || '';
-                    if (String(rawRole).toLowerCase().includes('cvht') || String(rawRole).toLowerCase().includes('admin') || String(rawRole).toLowerCase().includes('teacher')) {
+                    if (String(rawRole).toLowerCase().includes('cvht') || String(rawRole).toLowerCase().includes('teacher')) {
                         role = 'cvht';
+                    } else if (String(rawRole).toLowerCase().includes('admin')) {
+                        role = 'admin';
                     }
                     // Save user info if available
                     if (decoded.sub) localStorage.setItem('userEmail', decoded.sub);

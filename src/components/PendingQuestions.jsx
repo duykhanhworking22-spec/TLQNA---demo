@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, ChevronLeft, ChevronRight, User, Clock, BookOpen, Layers, Users, Search } from 'lucide-react';
+import { Eye, ChevronLeft, ChevronRight, User, Clock, BookOpen, Layers, Users, Search, Flag, X } from 'lucide-react';
 import './QuestionList.css';
 import './CVHTQuestions.css';
 import api, { questionApi, classApi } from '../services/api';
+import { useNotification } from '../contexts/NotificationContext';
 
 const PendingQuestions = ({ onNavigate }) => {
+    const { showNotification } = useNotification();
     const [questions, setQuestions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(0);
@@ -22,6 +24,10 @@ const PendingQuestions = ({ onNavigate }) => {
     const [classes, setClasses] = useState([]);
     const [cohorts, setCohorts] = useState([]);
     const [majors, setMajors] = useState([]);
+
+    // Reporting State
+    const [reportingQuestionId, setReportingQuestionId] = useState(null);
+    const [reportReason, setReportReason] = useState('');
 
     useEffect(() => {
         const fetchFilters = async () => {
@@ -42,42 +48,42 @@ const PendingQuestions = ({ onNavigate }) => {
         fetchFilters();
     }, []);
 
-    useEffect(() => {
-        const fetchQuestions = async () => {
-            setLoading(true);
-            try {
-                const params = {
-                    page: page,
-                    size: 10,
-                    sort: 'ngayGui,desc',
-                    maLop: classFilter,
-                    khoaHoc: cohortFilter,
-                    chuyenNganh: majorFilter,
-                    keyword: keyword
-                };
+    const fetchQuestions = async () => {
+        setLoading(true);
+        try {
+            const params = {
+                page: page,
+                size: 10,
+                sort: 'ngayGui,desc',
+                maLop: classFilter,
+                khoaHoc: cohortFilter,
+                chuyenNganh: majorFilter,
+                keyword: keyword
+            };
 
-                if (yearFilter) {
-                    params.fromDate = `${yearFilter}-01-01`;
-                    params.toDate = `${yearFilter}-12-31`;
-                }
-
-                if (statusFilter !== 'ALL') {
-                    params.status = statusFilter;
-                }
-
-                const response = await questionApi.getAll(params);
-                if (response.data && response.data.data) {
-                    const pageData = response.data.data;
-                    setQuestions(pageData.content || []);
-                    setTotalPages(pageData.totalPages);
-                }
-            } catch (error) {
-                console.error("Failed to fetch questions", error);
-            } finally {
-                setLoading(false);
+            if (yearFilter) {
+                params.fromDate = `${yearFilter}-01-01`;
+                params.toDate = `${yearFilter}-12-31`;
             }
-        };
 
+            if (statusFilter !== 'ALL') {
+                params.status = statusFilter;
+            }
+
+            const response = await questionApi.getAll(params);
+            if (response.data && response.data.data) {
+                const pageData = response.data.data;
+                setQuestions(pageData.content || []);
+                setTotalPages(pageData.totalPages);
+            }
+        } catch (error) {
+            console.error("Failed to fetch questions", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         // Debounce fetch
         const timeoutId = setTimeout(() => {
             fetchQuestions();
@@ -95,6 +101,29 @@ const PendingQuestions = ({ onNavigate }) => {
         onNavigate('question-detail', { id });
     };
 
+    const handleReportClick = (e, id) => {
+        e.stopPropagation();
+        setReportingQuestionId(id);
+        setReportReason('');
+    };
+
+    const submitReport = async () => {
+        if (!reportReason.trim()) {
+            showNotification('Vui lòng nhập lý do báo cáo', 'warning');
+            return;
+        }
+
+        try {
+            await questionApi.report(reportingQuestionId, reportReason);
+            showNotification('Đã gửi báo cáo lên Admin', 'success');
+            setReportingQuestionId(null);
+            fetchQuestions(); // Refresh list to update status
+        } catch (error) {
+            console.error("Report failed", error);
+            showNotification('Báo cáo thất bại. Vui lòng thử lại.', 'error');
+        }
+    };
+
     const getStatusLabel = (status) => {
         switch (String(status).toUpperCase()) {
             case 'PENDING': return 'Chờ duyệt';
@@ -102,6 +131,8 @@ const PendingQuestions = ({ onNavigate }) => {
             case 'ANSWER':
             case 'ANSWERED':
             case '1': return 'Đã trả lời';
+            case 'REPORTED':
+            case '2': return 'Đã báo cáo';
             default: return status;
         }
     };
@@ -113,6 +144,8 @@ const PendingQuestions = ({ onNavigate }) => {
             case 'ANSWER':
             case 'ANSWERED':
             case '1': return '#10b981';
+            case 'REPORTED':
+            case '2': return '#ef4444';
             default: return '#64748b';
         }
     };
@@ -217,19 +250,40 @@ const PendingQuestions = ({ onNavigate }) => {
                                         key={q.maCauHoi}
                                         className="question-card-horizontal"
                                         onClick={() => handleView(q.maCauHoi)}
+                                        style={{ position: 'relative' }}
                                     >
                                         <div className="card-header-flex">
                                             <h3 className="card-title-lg">{q.tieuDe}</h3>
-                                            <div className="card-status-badge" style={{
-                                                background: getStatusColor(q.trangThai),
-                                                color: '#fff',
-                                                padding: '0.2rem 0.6rem',
-                                                borderRadius: '12px',
-                                                fontSize: '0.75rem',
-                                                fontWeight: 600,
-                                                whiteSpace: 'nowrap'
-                                            }}>
-                                                {getStatusLabel(q.trangThai)}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <div className="card-status-badge" style={{
+                                                    background: getStatusColor(q.trangThai),
+                                                    color: '#fff',
+                                                    padding: '0.2rem 0.6rem',
+                                                    borderRadius: '12px',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: 600,
+                                                    whiteSpace: 'nowrap'
+                                                }}>
+                                                    {getStatusLabel(q.trangThai)}
+                                                </div>
+
+                                                {/* Report Button */}
+                                                {(q.trangThai === 'PENDING' || q.trangThai === '0') && (
+                                                    <button
+                                                        className="action-icon-btn report-btn"
+                                                        onClick={(e) => handleReportClick(e, q.maCauHoi)}
+                                                        title="Báo cáo vi phạm"
+                                                        style={{
+                                                            background: 'none', border: 'none', cursor: 'pointer',
+                                                            color: '#94a3b8', padding: '4px',
+                                                            display: 'flex', alignItems: 'center'
+                                                        }}
+                                                        onMouseEnter={(e) => e.target.style.color = '#ef4444'}
+                                                        onMouseLeave={(e) => e.target.style.color = '#94a3b8'}
+                                                    >
+                                                        <Flag size={18} />
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
 
@@ -280,6 +334,67 @@ const PendingQuestions = ({ onNavigate }) => {
                     </>
                 )}
             </div>
+
+            {/* Report Modal */}
+            {reportingQuestionId && (
+                <div className="modal-overlay" style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                }}>
+                    <div className="modal-content" style={{
+                        background: 'white', padding: '24px', borderRadius: '12px',
+                        width: '400px', maxWidth: '90%', boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+                            <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#ef4444', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Flag size={20} /> Báo cáo vi phạm
+                            </h3>
+                            <button onClick={() => setReportingQuestionId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                                <X size={20} color="#64748b" />
+                            </button>
+                        </div>
+
+                        <p style={{ marginBottom: '12px', color: '#475569', fontSize: '0.95rem' }}>
+                            Vui lòng nhập lý do báo cáo câu hỏi này lên Admin:
+                        </p>
+
+                        <textarea
+                            style={{
+                                width: '100%', height: '100px', padding: '12px',
+                                border: '1px solid #cbd5e1', borderRadius: '8px',
+                                marginBottom: '20px', resize: 'none', fontSize: '0.9rem'
+                            }}
+                            placeholder="Ví dụ: Nội dung không phù hợp, ngôn từ xúc phạm..."
+                            value={reportReason}
+                            onChange={(e) => setReportReason(e.target.value)}
+                        />
+
+                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                            <button
+                                onClick={() => setReportingQuestionId(null)}
+                                style={{
+                                    padding: '8px 16px', borderRadius: '6px',
+                                    border: '1px solid #e2e8f0', background: 'white',
+                                    color: '#64748b', cursor: 'pointer', fontWeight: 500
+                                }}
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                onClick={submitReport}
+                                style={{
+                                    padding: '8px 16px', borderRadius: '6px',
+                                    border: 'none', background: '#ef4444',
+                                    color: 'white', cursor: 'pointer', fontWeight: 500
+                                }}
+                            >
+                                Gửi báo cáo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     );
 };

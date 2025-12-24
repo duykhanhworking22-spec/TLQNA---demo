@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Clock, MessageSquare, Edit, Paperclip, X, Save, Send, History } from 'lucide-react';
 import api, { questionApi } from '../services/api';
 import './QuestionDetail.css';
+import { useNotification } from '../contexts/NotificationContext';
 
 const QuestionDetail = ({ questionId, onBack }) => {
+    const { showNotification } = useNotification();
     const [question, setQuestion] = useState(null);
     const [latestAnswer, setLatestAnswer] = useState(null);
     const [answerHistory, setAnswerHistory] = useState([]);
@@ -81,7 +83,7 @@ const QuestionDetail = ({ questionId, onBack }) => {
 
     const handleSaveEdit = async () => {
         if (!editData.tieuDe.trim() || !editData.noiDung.trim()) {
-            alert("Tiêu đề và nội dung không được để trống");
+            showNotification("Tiêu đề và nội dung không được để trống", 'warning');
             return;
         }
 
@@ -102,12 +104,12 @@ const QuestionDetail = ({ questionId, onBack }) => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            alert('Cập nhật câu hỏi thành công!');
+            showNotification('Cập nhật câu hỏi thành công!', 'success');
             setIsEditing(false);
             fetchData();
         } catch (error) {
             console.error('Error updating question:', error);
-            alert('Cập nhật thất bại. Vui lòng thử lại.');
+            showNotification('Cập nhật thất bại. Vui lòng thử lại.', 'error');
         } finally {
             setSaving(false);
         }
@@ -142,7 +144,7 @@ const QuestionDetail = ({ questionId, onBack }) => {
 
     const handleSaveAnswerEdit = async () => {
         if (!editAnswerContent.trim()) {
-            alert("Nội dung trả lời không được để trống");
+            showNotification("Nội dung trả lời không được để trống", 'warning');
             return;
         }
         setSendingAnswer(true);
@@ -155,12 +157,12 @@ const QuestionDetail = ({ questionId, onBack }) => {
 
             await questionApi.answer(questionId, formData);
 
-            alert('Cập nhật câu trả lời thành công!');
+            showNotification('Cập nhật câu trả lời thành công!', 'success');
             setIsEditingAnswer(false);
             fetchData();
         } catch (error) {
             console.error('Error updating answer:', error);
-            alert('Cập nhật thất bại.');
+            showNotification('Cập nhật thất bại.', 'error');
         } finally {
             setSendingAnswer(false);
         }
@@ -179,14 +181,14 @@ const QuestionDetail = ({ questionId, onBack }) => {
 
             await questionApi.answer(questionId, formData);
 
-            alert('Phản hồi thành công!');
+            showNotification('Phản hồi thành công!', 'success');
             setReplyContent('');
             setReplyFile(null);
             fetchData();
 
         } catch (error) {
             console.error('Error sending reply:', error);
-            alert('Gửi phản hồi thất bại.');
+            showNotification('Gửi phản hồi thất bại.', 'error');
         } finally {
             setSending(false);
         }
@@ -465,8 +467,8 @@ const QuestionDetail = ({ questionId, onBack }) => {
 
 
                 {/* Reply Box Area - Only for CVHT */}
-                {/* Reply Box Area - Only for CVHT and if not answered */}
-                {isCvht && !['ANSWER', 'ANSWERED', 'COMPLETED', '1', 'REJECTED'].includes(String(question.trangThai).toUpperCase()) && (
+                {/* Reply Box Area - Only for CVHT and if not answered/reported */}
+                {isCvht && !['ANSWER', 'ANSWERED', 'COMPLETED', '1', 'REJECTED', 'REPORTED', '2'].includes(String(question.trangThai).toUpperCase()) && (
                     <div className="reply-area">
                         <div className="reply-box">
                             <textarea

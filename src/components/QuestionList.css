@@ -224,6 +224,11 @@
     /* Green for Completed/Answered */
 }
 
+.status-badge.reported {
+    background-color: #ef4444;
+    /* Red for Reported */
+}
+
 /* Pagination controls */
 .pagination {
     padding: 1rem;
@@ -254,4 +259,71 @@
 .page-btn:hover {
     background-color: #f1f5f9;
     color: var(--text-main);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .app-container {
+        flex-direction: column;
+    }
+
+    .main-content {
+        width: 100vw;
+        padding-bottom: 60px;
+        /* Space for bottom nav if needed */
+    }
+
+    /* Force hide sidebar on mobile */
+    .sidebar {
+        display: none !important;
+    }
+
+    .content-container {
+        padding: 1rem;
+        width: 100%;
+    }
+
+    .top-bar {
+        padding: 0 1rem;
+    }
+
+    .top-bar-center {
+        font-size: 1rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 60%;
+    }
+
+    .questions-table {
+        min-width: unset;
+        /* Allow table to shrink */
+        display: block;
+    }
+
+    .questions-table thead {
+        display: none;
+        /* Hide headers on mobile */
+    }
+
+    .questions-table tbody,
+    .questions-table tr,
+    .questions-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .questions-table tr {
+        margin-bottom: 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        padding: 0.5rem;
+    }
+
+    .questions-table td {
+        padding: 0.5rem;
+        border-bottom: none;
+        text-align: left;
+    }
 }

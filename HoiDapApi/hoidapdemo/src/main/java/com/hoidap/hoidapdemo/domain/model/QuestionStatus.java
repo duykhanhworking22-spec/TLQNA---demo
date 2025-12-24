@@ -2,7 +2,8 @@ package com.hoidap.hoidapdemo.domain.model;
 
 public enum QuestionStatus {
     PENDING(0, "Chờ trả lời"),
-    ANSWER(1, "Đã trả lời");
+    ANSWER(1, "Đã trả lời"),
+    REPORTED(2, "Bị báo cáo");
 
     private final int code;
     private final String description;

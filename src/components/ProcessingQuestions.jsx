@@ -71,11 +71,12 @@ const ProcessingQuestions = ({ onNavigate }) => {
             };
 
             if (statusFilter !== 'ALL') {
-                params.status = statusFilter;
-            }
-
-            if (statusFilter !== 'ALL') {
-                params.status = statusFilter;
+                if (statusFilter === 'ANSWER') {
+                    // Include both ANSWER and REPORTED for History view
+                    params.statuses = 'ANSWER,REPORTED';
+                } else {
+                    params.status = statusFilter;
+                }
             }
 
             const response = await api.get('/questions', { params });
@@ -107,6 +108,8 @@ const ProcessingQuestions = ({ onNavigate }) => {
             case 'ANSWER':
             case 'ANSWERED':
             case '1': return 'Đã trả lời';
+            case 'REPORTED':
+            case '2': return 'Bị báo cáo';
             default: return status;
         }
     };
@@ -118,6 +121,8 @@ const ProcessingQuestions = ({ onNavigate }) => {
             case 'ANSWER':
             case 'ANSWERED':
             case '1': return '#10b981';
+            case 'REPORTED':
+            case '2': return '#ef4444';
             default: return '#64748b';
         }
     };

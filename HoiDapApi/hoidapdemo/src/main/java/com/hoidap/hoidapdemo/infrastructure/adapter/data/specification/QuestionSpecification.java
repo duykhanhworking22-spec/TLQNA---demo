@@ -22,7 +22,9 @@ public class QuestionSpecification {
                 predicates.add(cb.or(titleLike, contentLike));
             }
 
-            if (criteria.getStatus() != null) {
+            if (criteria.getStatuses() != null && !criteria.getStatuses().isEmpty()) {
+                predicates.add(root.get("trangThai").in(criteria.getStatuses()));
+            } else if (criteria.getStatus() != null) {
                 predicates.add(cb.equal(root.get("trangThai"), criteria.getStatus()));
             }
 
@@ -52,6 +54,10 @@ public class QuestionSpecification {
             if (StringUtils.hasText(criteria.getChuyenNganh())) {
                 predicates.add(cb.like(cb.lower(root.get("sinhVien").get("lop").get("chuyenNganh")),
                         "%" + criteria.getChuyenNganh().toLowerCase() + "%"));
+            }
+
+            if (StringUtils.hasText(criteria.getLinhVuc())) {
+                predicates.add(cb.equal(root.get("linhVuc"), criteria.getLinhVuc()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
